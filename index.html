@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEDLENS — Drug Intelligence Dashboard</title>
+<style>
+:root{
+--accent:#0066CC; --accent-soft:#0066CC1a;
+--bg:#f4f6f9; --panel:#ffffff; --text:#1a1d24; --muted:#6b7280; --border:#e3e6ec;
+--radius:16px; --shadow:0 6px 20px rgba(20,20,40,.06); --shadow-hover:0 12px 28px rgba(20,20,40,.12);
+}
+[data-theme="dark"]{
+--bg:#0e0f14; --panel:#181a22; --text:#eef0f5; --muted:#9aa0b0; --border:#262a36;
+--shadow:0 6px 20px rgba(0,0,0,.4); --shadow-hover:0 12px 30px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s;-webkit-font-smoothing:antialiased;}
+header.topbar{
+position:sticky; top:0; z-index:50; display:flex; align-items:center; justify-content:space-between;
+padding:16px 28px; background:var(--panel); border-bottom:1px solid var(--border); box-shadow:var(--shadow);
+}
+.logo{ display:flex; align-items:center; gap:10px; font-weight:700; font-size:20px; letter-spacing:.3px;}
+.logo .mark{ width:28px;height:28px;border-radius:8px; background:linear-gradient(135deg,#0066CC,#00C2A8); display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800;}
+.logo-sub{ font-size:11px; color:var(--muted); font-weight:500; margin-left:4px;}
+.switch{ position:relative; width:46px; height:24px; flex-shrink:0;}
+.switch input{ opacity:0; width:0; height:0;}
+.slider{ position:absolute; cursor:pointer; inset:0; background:#c7cad1; border-radius:24px; transition:.25s;}
+.slider::before{ content:""; position:absolute; height:18px;width:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.25s; box-shadow:0 1px 3px rgba(0,0,0,.3);}
+input:checked + .slider{ background:var(--accent);}
+input:checked + .slider::before{ transform:translateX(22px);}
+.theme-row{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); font-weight:600;}
+.hero{ max-width:900px; margin:50px auto 0; padding:0 24px; text-align:center;}
+.hero h1{ font-size:34px; font-weight:700; margin:0 0 8px; }
+.hero p{ color:var(--muted); font-size:14px; margin:0 0 26px; }
+.search-wrap{ max-width:640px; margin:0 auto; position:relative; }
+.search-box{
+display:flex; align-items:center; gap:10px; background:var(--panel); border:1.5px solid var(--border);
+border-radius:999px; padding:8px 8px 8px 22px; box-shadow:var(--shadow); transition:border-color .2s;
+}
+.search-box:focus-within{ border-color:var(--accent); }
+.search-box input{
+flex:1; border:none; outline:none; background:transparent; font-family:inherit; font-size:15px; color:var(--text);
+}
+.search-btn{
+background:var(--accent); color:#fff; border:none; border-radius:999px; padding:12px 26px;
+font-family:inherit; font-weight:700; font-size:13.5px; cursor:pointer; transition:all .2s; letter-spacing:.3px;
+}
+.search-btn:hover{ background:#0052a3; }
+.suggestions{
+display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;
+}
+.chip-btn{
+border:1px solid var(--border); background:var(--panel); color:var(--muted); padding:6px 14px;
+border-radius:999px; font-size:12px; font-weight:600; cursor:pointer; transition:all .2s; font-family:inherit;
+}
+.chip-btn:hover{ border-color:var(--accent); color:var(--accent); }
+#loading{ display:none; text-align:center; padding:50px 0; color:var(--muted); font-size:14px; }
+#loading.show{ display:block; }
+.spinner{
+width:32px;height:32px;border-radius:50%; border:3px solid var(--border); border-top-color:var(--accent);
+margin:0 auto 14px; animation:spin 0.8s linear infinite;
+}
+@keyframes spin{ to{ transform:rotate(360deg); } }
+#emptyState{ text-align:center; padding:60px 20px; color:var(--muted); }
+#emptyState .big-icon{ font-size:44px; margin-bottom:12px; opacity:.5; }
+main{ max-width:1100px; margin:0 auto; padding:36px 24px 80px; }
+.result-card{ display:none; }
+.result-card.show{ display:block; animation:fadeIn .35s ease; }
+@keyframes fadeIn{ from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);} }
+.drug-header{
+background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:28px 32px;
+box-shadow:var(--shadow); display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap;
+}
+.drug-title-block h2{ font-size:28px; font-weight:700; margin:0 0 2px; }
+.drug-generic{ font-size:13.5px; color:var(--muted); font-style:italic; margin-bottom:10px; }
+.drug-tags{ display:flex; gap:8px; flex-wrap:wrap; }
+.tag{ font-size:11px; font-weight:700; padding:4px 11px; border-radius:999px; background:var(--accent-soft); color:var(--accent); text-transform:uppercase; letter-spacing:.4px; }
+.tag.class-tag{ background:#00C2A81a; color:#00997f; }
+.confidence-note{ font-size:11px; color:var(--muted); max-width:220px; text-align:right; }
+.header-links{ display:flex; gap:10px; margin-top:12px; flex-wrap:wrap; }
+.link-btn{
+display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:8px 14px;
+border-radius:999px; text-decoration:none; border:1.5px solid var(--accent); color:var(--accent);
+transition:all .2s;
+}
+.link-btn:hover{ background:var(--accent); color:#fff; }
+.link-btn.secondary{ border-color:var(--border); color:var(--muted); }
+.link-btn.secondary:hover{ background:var(--muted); color:#fff; border-color:var(--muted); }
+.grid-2{ display:grid; grid-template-columns:1.3fr 1fr; gap:20px; margin-top:20px; }
+.grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:20px; }
+@media (max-width:800px){ .grid-2, .grid-3{ grid-template-columns:1fr; } }
+.panel{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:24px 26px; box-shadow:var(--shadow); }
+.panel h3{ font-size:14px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin:0 0 14px; font-weight:700; }
+.panel p{ font-size:14px; line-height:1.65; color:var(--text); margin:0 0 10px; }
+.panel ul{ margin:0; padding-left:18px; font-size:13.5px; line-height:1.8; color:var(--text); }
+.layman-box{
+background:var(--accent-soft); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-top:14px;
+}
+.layman-box .label-row{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.layman-box .label-row span.emoji{ font-size:16px; }
+.layman-box .label-row b{ font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--accent); }
+.layman-box p{ margin:0; font-size:13.5px; line-height:1.6; }
+/* Body map infographic */
+.bodymap-wrap{ display:flex; flex-direction:column; align-items:center; }
+.bodymap{ position:relative; width:150px; }
+.bodymap svg{ width:100%; display:block; }
+.bodymap .zone{ transition:opacity .2s; cursor:pointer; }
+.bodymap .zone.active{ fill:var(--accent) !important; opacity:1; }
+.bodymap .zone.inactive{ opacity:.12; }
+.zone-legend{ margin-top:14px; display:flex; flex-direction:column; gap:6px; width:100%; }
+.zone-legend-item{ display:flex; align-items:center; gap:8px; font-size:12.5px; }
+.zone-legend-dot{ width:10px;height:10px;border-radius:50%; background:var(--accent); flex-shrink:0; }
+.resource-item{
+display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);
+}
+.resource-item:last-child{ border-bottom:none; }
+.resource-icon{ width:34px;height:34px; border-radius:9px; background:var(--accent-soft); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.resource-text h4{ margin:0 0 3px; font-size:13.5px; font-weight:700; }
+.resource-text p{ margin:0; font-size:12.5px; color:var(--muted); line-height:1.5; }
+.resource-link{ font-size:11.5px; font-weight:700; color:var(--accent); text-decoration:none; }
+.company-card{ display:flex; align-items:center; gap:16px; margin-bottom:16px; }
+.company-logo-mark{ width:52px;height:52px; border-radius:12px; background:var(--accent); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:18px; flex-shrink:0; }
+.company-meta h4{ margin:0 0 2px; font-size:15px; font-weight:700; }
+.company-meta span{ font-size:12px; color:var(--muted); }
+.stat-row{ display:flex; gap:18px; margin-top:14px; flex-wrap:wrap; }
+.stat{ flex:1; min-width:90px; }
+.stat .val{ font-size:18px; font-weight:800; }
+.stat .lbl{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.4px; }
+.company-website-link{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; color:var(--accent); text-decoration:none; margin-top:14px; }
+.company-website-link:hover{ text-decoration:underline; }
+.other-drugs-wrap{ margin-top:18px; padding-top:16px; border-top:1px solid var(--border); }
+.other-drugs-wrap h4{ margin:0 0 10px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); font-weight:700; }
+.other-drugs-list{ display:flex; flex-wrap:wrap; gap:8px; }
+.other-drug-chip{ font-size:12px; padding:6px 13px; border-radius:999px; background:var(--bg); border:1px solid var(--border); font-weight:600; }
+.side-effects-list{ display:flex; flex-wrap:wrap; gap:8px; }
+.se-chip{ font-size:12px; padding:6px 12px; border-radius:8px; background:var(--bg); border:1px solid var(--border); }
+.se-chip.serious{ background:#e7004c1a; color:#e7004c; border-color:#e7004c40; font-weight:700; }
+.disclaimer{
+margin-top:28px; font-size:11.5px; color:var(--muted); background:var(--panel); border:1px dashed var(--border);
+border-radius:12px; padding:14px 18px; line-height:1.6;
+}
+.disclaimer b{ color:var(--text); }
+.source-note{ display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); margin-top:16px; justify-content:flex-end; }
+.source-dot{ width:6px;height:6px;border-radius:50%; background:#00C2A8; }
+footer{ text-align:center; padding:26px; font-size:11px; color:var(--muted); border-top:1px solid var(--border); }
+</style>
+</head>
+<body data-theme="light">
+<header class="topbar">
+<div class="logo"><span class="mark">ML</span>MEDLENS<span class="logo-sub">Drug Intelligence Dashboard</span></div>
+<div class="theme-row">
+<span id="themeLabel">Light</span>
+<label class="switch">
+<input type="checkbox" id="themeToggle">
+<span class="slider"></span>
+</label>
+</div>
+</header>
+<div class="hero">
+<h1>Look Up Any Pharmaceutical Drug</h1>
+<p>Search by brand or generic name for an at-a-glance clinical and commercial summary.</p>
+<div class="search-wrap">
+<div class="search-box">
+<span>🔍</span>
+<input type="text" id="searchInput" placeholder="Try “Amvuttra”, “Wegovy”, “Rezdiffra”...">
+<button class="search-btn" id="searchBtn">Search</button>
+</div>
+</div>
+<div class="suggestions">
+<button class="chip-btn" data-drug="amvuttra">Amvuttra</button>
+<button class="chip-btn" data-drug="wegovy">Wegovy</button>
+<button class="chip-btn" data-drug="rezdiffra">Rezdiffra</button>
+<button class="chip-btn" data-drug="trutakna">Trutakna</button>
+<button class="chip-btn" data-drug="filsuvez">Filsuvez</button>
+</div>
+</div>
+<main>
+<div id="loading">
+<div class="spinner"></div>
+Searching drug databases...
+</div>
+<div id="emptyState">
+<div class="big-icon">💊</div>
+<div>Enter a drug name above to generate a summary.</div>
+</div>
+<div class="result-card" id="resultCard"></div>
+<div class="disclaimer" id="globalDisclaimer" style="display:none;">
+<b>Data notice:</b> Summaries are generated from public FDA label data and AI interpretation. Always verify against current official prescribing information before clinical or promotional use.
+</div>
+</main>
+<footer>MEDLENS — Internal demo build. Not for patient-facing use. Content is illustrative, not verified medical guidance.</footer>
+<script>
+/* ============================================================
+MOCK DATABASE — used as fallback examples / offline demo data.
+Live searches now pull from your backend via lookupDrug() below.
+============================================================ */
+const DB = {
+amvuttra:{
+brand:"AMVUTTRA", generic:"vutrisiran", company:"Alnylam Pharmaceuticals", companyInitials:"AL",
+companyFounded:"2002", companyHQ:"Cambridge, MA", companyFocus:"RNAi Therapeutics",
+drugClass:"RNA Interference (RNAi) Therapeutic", route:"Subcutaneous injection", frequency:"Every 3 months",
+accent:"#E7004C",
+indication:"Amvuttra is used to treat polyneuropathy caused by hereditary transthyretin-mediated (hATTR) amyloidosis in adults. It works by reducing production of the abnormal TTR protein that builds up and damages nerves and other tissues.",
+laymanSummary:"Amvuttra helps people whose bodies make a faulty protein that builds up and damages nerves over time. The medicine tells the body to make less of that bad protein, which can help protect the nerves from further harm.",
+drugWebsite:"https://www.amvuttra.com",
+companyWebsite:"https://www.alnylam.com",
+otherDrugs:["Onpattro","Givlaari","Oxlumo","Leqvio"],
+bodyZones:["peripheral-nerves","heart"],
+bodyZoneLabels:{"peripheral-nerves":"Peripheral Nervous System — primary site of amyloid deposit damage causing polyneuropathy","heart":"Cardiac tissue — amyloidosis can also affect the heart in some patients"},
+sideEffects:[{name:"Injection site reactions",serious:false},{name:"Fatigue",serious:false},{name:"Peripheral edema",serious:false},{name:"Vitamin A deficiency",serious:true}],
+resources:[
+{icon:"🤝", title:"Alnylam Assist", text:"Patient support program offering financial assistance, insurance navigation, and injection training."},
+{icon:"📞", title:"1:1 Nurse Educator Access", text:"Dedicated nurse educators available for onboarding and ongoing injection support."},
+{icon:"💰", title:"Copay Savings Card", text:"Eligible patients may pay as little as $0 per dose with commercial insurance."}
+]
+},
+wegovy:{
+brand:"WEGOVY", generic:"semaglutide", company:"Novo Nordisk", companyInitials:"NN",
+companyFounded:"1923", companyHQ:"Bagsværd, Denmark", companyFocus:"Diabetes & Obesity Care",
+drugClass:"GLP-1 Receptor Agonist", route:"Subcutaneous injection / oral tablet", frequency:"Weekly (injection) or daily (tablet)",
+accent:"#0092BC",
+indication:"Wegovy is indicated for chronic weight management in adults and adolescents with obesity, or overweight with at least one weight-related condition, used alongside a reduced-calorie diet and increased physical activity. It also reduces cardiovascular risk in adults with established heart disease and obesity.",
+laymanSummary:"Wegovy is a weekly shot that helps people feel full faster and eat less, which supports weight loss over time. It also helps lower the risk of serious heart problems in people who already have heart disease and are overweight.",
+drugWebsite:"https://www.wegovy.com",
+companyWebsite:"https://www.novonordisk.com",
+otherDrugs:["Ozempic","Rybelsus","Saxenda","Victoza"],
+bodyZones:["brain","stomach","heart"],
+bodyZoneLabels:{"brain":"Hypothalamus — GLP-1 receptor activity regulates appetite signaling","stomach":"GI tract — slows gastric emptying, increasing satiety","heart":"Cardiovascular system — shown to reduce major cardiac events in at-risk patients"},
+sideEffects:[{name:"Nausea",serious:false},{name:"Diarrhea",serious:false},{name:"Constipation",serious:false},{name:"Pancreatitis",serious:true},{name:"Gallbladder issues",serious:true}],
+resources:[
+{icon:"🌱", title:"Live Lighter™ Program", text:"Ongoing behavioral support content, meal planning tools, and community for weight management."},
+{icon:"💳", title:"NovoCare Savings Offer", text:"Savings card program for eligible commercially insured patients."},
+{icon:"📱", title:"Injection Pen Tutorial App", text:"Step-by-step digital guide for at-home self-injection."}
+]
+},
+rezdiffra:{
+brand:"REZDIFFRA", generic:"resmetirom", company:"Madrigal Pharmaceuticals", companyInitials:"MD",
+companyFounded:"2011", companyHQ:"West Conshohocken, PA", companyFocus:"Liver Disease (MASH/NASH)",
+drugClass:"Thyroid Hormone Receptor-Beta Agonist", route:"Oral tablet", frequency:"Once daily",
+accent:"#140FA5",
+indication:"Rezdiffra is used along with diet and exercise to treat adults with noncirrhotic metabolic dysfunction-associated steatohepatitis (MASH, formerly NASH) with moderate to advanced liver fibrosis. It is the first FDA-approved treatment for this condition.",
+laymanSummary:"Rezdiffra is a daily pill for people whose liver has too much fat buildup and scarring from a condition called MASH. It works with diet and exercise to help improve liver health and slow down further damage.",
+drugWebsite:"https://www.rezdiffra.com",
+companyWebsite:"https://www.madrigalpharma.com",
+otherDrugs:["No other approved products — Rezdiffra is Madrigal's first FDA-approved medicine"],
+bodyZones:["liver"],
+bodyZoneLabels:{"liver":"Liver — reduces fat accumulation and fibrosis progression associated with MASH"},
+sideEffects:[{name:"Diarrhea",serious:false},{name:"Nausea",serious:false},{name:"Itching",serious:false},{name:"Vomiting",serious:false},{name:"Liver enzyme elevation",serious:true}],
+resources:[
+{icon:"🩺", title:"Madrigal Cares", text:"Patient support hub for insurance verification, financial assistance, and treatment education."},
+{icon:"📖", title:"MASH Education Center", text:"Disease-state education resources to help patients understand liver fibrosis progression."},
+{icon:"💰", title:"Copay Assistance Program", text:"Support for eligible patients to reduce out-of-pocket cost."}
+]
+},
+trutakna:{
+brand:"TRUTAKNA", generic:"atacicept", company:"Vera Therapeutics", companyInitials:"VT",
+companyFounded:"2016", companyHQ:"Brisbane, CA", companyFocus:"Kidney & Immune Disease",
+drugClass:"Dual B-Lymphocyte Stimulator / APRIL Inhibitor", route:"Subcutaneous injection", frequency:"Weekly",
+accent:"#36508C",
+indication:"Trutakna is being developed to treat IgA nephropathy (IgAN), a chronic autoimmune kidney disease. It works by reducing pathogenic antibody production believed to drive kidney damage in IgAN patients.",
+laymanSummary:"Trutakna is a weekly shot being studied for people whose kidneys are being damaged by their own immune system. It works by calming down the part of the immune system that makes harmful antibodies, aiming to protect the kidneys.",
+drugWebsite:"https://www.veratx.com/trutakna",
+companyWebsite:"https://www.veratx.com",
+otherDrugs:["Vera Therapeutics currently has no other approved commercial products"],
+bodyZones:["kidneys","immune-system"],
+bodyZoneLabels:{"kidneys":"Kidneys — primary organ affected by IgA nephropathy and target of therapeutic benefit","immune-system":"Immune system — modulates B-cell activity to reduce autoantibody production"},
+sideEffects:[{name:"Injection site reactions",serious:false},{name:"Headache",serious:false},{name:"Upper respiratory infection",serious:false},{name:"Reduced immunoglobulin levels",serious:true}],
+resources:[
+{icon:"🧬", title:"IgAN Patient Community", text:"Educational hub connecting patients with kidney disease specialists and peer support."},
+{icon:"🤝", title:"Vera Cares Navigator", text:"One-on-one case management for insurance and access support."},
+{icon:"📚", title:"Clinical Trial Resource Library", text:"Information on ongoing studies for patients seeking trial participation."}
+]
+},
+filsuvez:{
+brand:"FILSUVEZ", generic:"birch triterpenes", company:"Amryt Pharma (Chiesi Group)", companyInitials:"AM",
+companyFounded:"2015", companyHQ:"Dublin, Ireland", companyFocus:"Rare Dermatological Disease",
+drugClass:"Topical Gel — Wound Healing Agent", route:"Topical gel", frequency:"Applied at each dressing change",
+accent:"#0065A1",
+indication:"Filsuvez is a topical gel used for the treatment of wounds associated with dystrophic and junctional epidermolysis bullosa (EB), a rare genetic skin disorder, in patients 6 months of age and older.",
+laymanSummary:"Filsuvez is a gel applied to wounds for people born with a rare skin condition that causes the skin to blister and tear very easily. The gel helps those wounds heal faster and more effectively.",
+drugWebsite:"https://www.filsuvez.com",
+companyWebsite:"https://www.chiesi.com",
+otherDrugs:["Lamzede","Mycapssa","Myalept"],
+bodyZones:["skin"],
+bodyZoneLabels:{"skin":"Skin — applied topically to promote wound closure in epidermolysis bullosa lesions"},
+sideEffects:[{name:"Wound complications",serious:false},{name:"Application site reactions",serious:false},{name:"Itching",serious:false},{name:"Hypersensitivity reactions",serious:true}],
+resources:[
+{icon:"🎗️", title:"EB Patient Advocacy Link", text:"Connection point to rare-disease advocacy and community organizations for EB families."},
+{icon:"🩹", title:"Wound Care Training Materials", text:"Caregiver-focused guides on proper gel application and dressing technique."},
+{icon:"💰", title:"Patient Assistance Program", text:"Financial support pathway for eligible patients with dystrophic/junctional EB."}
+]
+}
+};
+/* Simple body silhouette with clickable/highlightable zones */
+const BODY_ZONES = ["brain","heart","stomach","liver","kidneys","peripheral-nerves","immune-system","skin"];
+function renderBodyMap(activeZones){
+const positions = {
+brain:{cx:75,cy:22,r:11}, heart:{cx:70,cy:62,r:9}, stomach:{cx:80,cy:85,r:9},
+liver:{cx:65,cy:82,r:9}, kidneys:{cx:75,cy:100,r:8}, "peripheral-nerves":{cx:75,cy:180,r:0},
+"immune-system":{cx:75,cy:70,r:0}, skin:{cx:75,cy:150,r:0}
+};
+let extras = '';
+if(activeZones.includes('peripheral-nerves')){
+extras += `<line x1="75" y1="115" x2="30" y2="230" stroke="var(--accent)" stroke-width="2" opacity="0.7"/>
+<line x1="75" y1="115" x2="120" y2="230" stroke="var(--accent)" stroke-width="2" opacity="0.7"/>`;
+}
+if(activeZones.includes('immune-system')){
+extras += `<circle cx="55" cy="75" r="4" fill="var(--accent)" opacity="0.6"/><circle cx="95" cy="90" r="4" fill="var(--accent)" opacity="0.6"/><circle cx="50" cy="110" r="4" fill="var(--accent)" opacity="0.6"/>`;
+}
+if(activeZones.includes('skin')){
+extras += `<rect x="35" y="45" width="80" height="180" rx="20" fill="none" stroke="var(--accent)" stroke-width="2" stroke-dasharray="4 3" opacity="0.6"/>`;
+}
+let circles = '';
+['brain','heart','stomach','liver','kidneys'].forEach(z=>{
+const p = positions[z];
+const isActive = activeZones.includes(z);
+circles += `<circle class="zone ${isActive?'active':'inactive'}" cx="${p.cx}" cy="${p.cy}" r="${p.r}" fill="${isActive?'var(--accent)':'#9aa0b0'}"/>`;
+});
+return `
+<svg viewBox="0 0 150 260" xmlns="http://www.w3.org/2000/svg">
+<!-- simple silhouette -->
+<ellipse cx="75" cy="22" rx="14" ry="16" fill="none" stroke="var(--border)" stroke-width="2"/>
+<rect x="60" y="38" width="30" height="10" fill="none" stroke="var(--border)" stroke-width="2"/>
+<path d="M40 48 Q75 40 110 48 L118 130 Q75 145 32 130 Z" fill="none" stroke="var(--border)" stroke-width="2"/>
+<line x1="40" y1="55" x2="15" y2="120" stroke="var(--border)" stroke-width="2"/>
+<line x1="110" y1="55" x2="135" y2="120" stroke="var(--border)" stroke-width="2"/>
+<path d="M55 130 L45 230 L60 232 L68 145 L82 145 L90 232 L105 230 L95 130 Z" fill="none" stroke="var(--border)" stroke-width="2"/>
+${extras}
+${circles}
+</svg>`;
+}
+function renderResult(drug){
+const d = DB[drug];
+if(!d) return null;
+document.documentElement.style.setProperty('--accent', d.accent || '#0066CC');
+document.documentElement.style.setProperty('--accent-soft', (d.accent || '#0066CC') + '1a');
+
+const legendItems = (d.bodyZones||[]).map(z=>`
+<div class="zone-legend-item"><span class="zone-legend-dot"></span>${d.bodyZoneLabels ? d.bodyZoneLabels[z] : z}</div>
+`).join('');
+
+const seChips = (d.sideEffects||[]).map(se=>`<span class="se-chip ${se.serious?'serious':''}">${se.name}</span>`).join('');
+
+const resourceItems = (d.resources||[]).map(r=>`
+<div class="resource-item">
+<div class="resource-icon">${r.icon}</div>
+<div class="resource-text"><h4>${r.title}</h4><p>${r.text}</p></div>
+</div>
+`).join('');
+
+// Safe fallback handling in case backend response is missing a field
+const drugSite = d.drugWebsite || null;
+const companySite = d.companyWebsite || null;
+const layman = d.laymanSummary || null;
+const otherDrugsList = (d.otherDrugs && d.otherDrugs.length) ? d.otherDrugs : null;
+
+const headerLinks = `
+<div class="header-links">
+${drugSite ? `<a class="link-btn" href="${drugSite}" target="_blank" rel="noopener noreferrer">🔗 Official Drug Site</a>` : ''}
+${companySite ? `<a class="link-btn secondary" href="${companySite}" target="_blank" rel="noopener noreferrer">🏢 Company Site</a>` : ''}
+</div>`;
+
+const laymanBlock = layman ? `
+<div class="layman-box">
+<div class="label-row"><span class="emoji">💬</span><b>In Simple Terms</b></div>
+<p>${layman}</p>
+</div>` : '';
+
+const otherDrugsBlock = otherDrugsList ? `
+<div class="other-drugs-wrap">
+<h4>Other Drugs by ${d.company}</h4>
+<div class="other-drugs-list">${otherDrugsList.map(od=>`<span class="other-drug-chip">${od}</span>`).join('')}</div>
+</div>` : '';
+
+const companyWebsiteLinkBlock = companySite ? `
+<a class="company-website-link" href="${companySite}" target="_blank" rel="noopener noreferrer">🔗 Visit ${d.company} Website</a>` : '';
+
+return `
+<div class="drug-header">
+<div class="drug-title-block">
+<h2>${d.brand}</h2>
+<div class="drug-generic">${d.generic}</div>
+<div class="drug-tags">
+<span class="tag">${d.route}</span>
+<span class="tag class-tag">${d.drugClass}</span>
+<span class="tag">${d.frequency}</span>
+</div>
+${headerLinks}
+</div>
+<div class="confidence-note">Summary generated from FDA label data and AI interpretation. Verify against current prescribing information.</div>
+</div>
+<div class="grid-2">
+<div class="panel">
+<h3>Indication Summary</h3>
+<p>${d.indication}</p>
+${laymanBlock}
+<h3 style="margin-top:20px;">Common & Serious Side Effects</h3>
+<div class="side-effects-list">${seChips}</div>
+</div>
+<div class="panel bodymap-wrap">
+<h3 style="align-self:flex-start;">Areas of the Body Affected</h3>
+<div class="bodymap">${renderBodyMap(d.bodyZones||[])}</div>
+<div class="zone-legend">${legendItems}</div>
+</div>
+</div>
+<div class="grid-2">
+<div class="panel">
+<h3>Patient Resources & Support</h3>
+${resourceItems}
+</div>
+<div class="panel">
+<h3>Parent Company</h3>
+<div class="company-card">
+<div class="company-logo-mark">${d.companyInitials}</div>
+<div class="company-meta">
+<h4>${d.company}</h4>
+<span>${d.companyFocus}</span>
+</div>
+</div>
+<div class="stat-row">
+<div class="stat"><div class="val">${d.companyFounded}</div><div class="lbl">Founded</div></div>
+<div class="stat"><div class="val" style="font-size:13px;">${d.companyHQ}</div><div class="lbl">Headquarters</div></div>
+</div>
+${companyWebsiteLinkBlock}
+${otherDrugsBlock}
+</div>
+</div>
+<div class="source-note"><span class="source-dot"></span>${d.source === 'live' ? 'Live search result' : 'Sample data'}</div>
+`;
+}
+/* ============================================================
+LIVE BACKEND CONNECTION — do not modify, this is working.
+============================================================ */
+async function lookupDrug(query) {
+try {
+const res = await fetch(`http://localhost:3001/api/drug/${encodeURIComponent(query)}`);
+if (!res.ok) return null;
+const data = await res.json();
+DB[query.trim().toLowerCase()] = data;
+return query.trim().toLowerCase();
+} catch (err) {
+console.error("Lookup failed:", err);
+return null;
+}
+}
+async function doSearch(query){
+const loading = document.getElementById('loading');
+const empty = document.getElementById('emptyState');
+const card = document.getElementById('resultCard');
+const disclaimer = document.getElementById('globalDisclaimer');
+empty.style.display = 'none';
+card.classList.remove('show');
+loading.classList.add('show');
+const key = await lookupDrug(query);
+loading.classList.remove('show');
+disclaimer.style.display = 'block';
+if(key){
+card.innerHTML = renderResult(key);
+card.classList.add('show');
+} else {
+card.innerHTML = `<div class="panel" style="text-align:center; padding:50px;">
+<div style="font-size:32px;margin-bottom:10px;">🔎</div>
+<b>No match found for "${query}"</b>
+<p style="color:var(--muted); font-size:13px; margin-top:8px;">
+Try checking spelling, or search by generic name instead of brand name.
+</p>
+</div>`;
+card.classList.add('show');
+}
+}
+document.getElementById('searchBtn').addEventListener('click', ()=>{
+const q = document.getElementById('searchInput').value;
+if(q.trim()) doSearch(q);
+});
+document.getElementById('searchInput').addEventListener('keydown', e=>{
+if(e.key === 'Enter'){ const q = e.target.value; if(q.trim()) doSearch(q); }
+});
+document.querySelectorAll('.chip-btn').forEach(btn=>{
+btn.addEventListener('click', ()=>{
+document.getElementById('searchInput').value = btn.dataset.drug;
+doSearch(btn.dataset.drug);
+});
+});
+document.getElementById('themeToggle').addEventListener('change', e=>{
+const isDark = e.target.checked;
+document.body.setAttribute('data-theme', isDark ? 'dark':'light');
+document.getElementById('themeLabel').textContent = isDark ? 'Dark':'Light';
+});
+</script>
+</body>
+</html>
