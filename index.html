@@ -136,6 +136,19 @@ display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1p
 .side-effects-list{ display:flex; flex-wrap:wrap; gap:8px; }
 .se-chip{ font-size:12px; padding:6px 12px; border-radius:8px; background:var(--bg); border:1px solid var(--border); }
 .se-chip.serious{ background:#e7004c1a; color:#e7004c; border-color:#e7004c40; font-weight:700; }
+
+/* ⭐ NEW: Similar Drugs / Same Generic Name styling ⭐ */
+.similar-drugs-wrap{ margin-top:20px; padding-top:16px; border-top:1px solid var(--border); }
+.similar-drugs-wrap h3{ font-size:14px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin:0 0 12px; font-weight:700; }
+.similar-drugs-list{ display:flex; flex-wrap:wrap; gap:8px; }
+.similar-drug-link{
+font-size:12.5px; font-weight:700; padding:6px 14px; border-radius:999px;
+background:var(--accent-soft); color:var(--accent); text-decoration:none;
+border:1px solid var(--border); cursor:pointer; transition:all .2s;
+}
+.similar-drug-link:hover{ background:var(--accent); color:#fff; }
+/* ⭐ END NEW ⭐ */
+
 .disclaimer{
 margin-top:28px; font-size:11.5px; color:var(--muted); background:var(--panel); border:1px dashed var(--border);
 border-radius:12px; padding:14px 18px; line-height:1.6;
@@ -189,7 +202,7 @@ Searching drug databases...
 <b>Data notice:</b> Summaries are generated from public FDA label data and AI interpretation. Always verify against current official prescribing information before clinical or promotional use.
 </div>
 </main>
-<footer>MEDLENS — Internal demo build. Content is illustrative. 072626</footer>
+<footer>MEDLENS — Internal demo build. Not for patient-facing use. Content is illustrative, not verified medical guidance.</footer>
 <script>
 /* ============================================================
 MOCK DATABASE — used as fallback examples / offline demo data.
@@ -330,51 +343,48 @@ ${extras}
 ${circles}
 </svg>`;
 }
+
+/* ⭐ UPDATED: renderResult() now includes the similar drugs section ⭐ */
 function renderResult(drug){
 const d = DB[drug];
 if(!d) return null;
 document.documentElement.style.setProperty('--accent', d.accent || '#0066CC');
 document.documentElement.style.setProperty('--accent-soft', (d.accent || '#0066CC') + '1a');
-
 const legendItems = (d.bodyZones||[]).map(z=>`
 <div class="zone-legend-item"><span class="zone-legend-dot"></span>${d.bodyZoneLabels ? d.bodyZoneLabels[z] : z}</div>
 `).join('');
-
 const seChips = (d.sideEffects||[]).map(se=>`<span class="se-chip ${se.serious?'serious':''}">${se.name}</span>`).join('');
-
 const resourceItems = (d.resources||[]).map(r=>`
 <div class="resource-item">
 <div class="resource-icon">${r.icon}</div>
 <div class="resource-text"><h4>${r.title}</h4><p>${r.text}</p></div>
 </div>
 `).join('');
-
-// Safe fallback handling in case backend response is missing a field
 const drugSite = d.drugWebsite || null;
 const companySite = d.companyWebsite || null;
 const layman = d.laymanSummary || null;
 const otherDrugsList = (d.otherDrugs && d.otherDrugs.length) ? d.otherDrugs : null;
-
 const headerLinks = `
 <div class="header-links">
 ${drugSite ? `<a class="link-btn" href="${drugSite}" target="_blank" rel="noopener noreferrer">🔗 Official Drug Site</a>` : ''}
 ${companySite ? `<a class="link-btn secondary" href="${companySite}" target="_blank" rel="noopener noreferrer">🏢 Company Site</a>` : ''}
 </div>`;
-
 const laymanBlock = layman ? `
 <div class="layman-box">
 <div class="label-row"><span class="emoji">💬</span><b>In Simple Terms</b></div>
 <p>${layman}</p>
 </div>` : '';
-
 const otherDrugsBlock = otherDrugsList ? `
 <div class="other-drugs-wrap">
 <h4>Other Drugs by ${d.company}</h4>
 <div class="other-drugs-list">${otherDrugsList.map(od=>`<span class="other-drug-chip">${od}</span>`).join('')}</div>
 </div>` : '';
-
 const companyWebsiteLinkBlock = companySite ? `
 <a class="company-website-link" href="${companySite}" target="_blank" rel="noopener noreferrer">🔗 Visit ${d.company} Website</a>` : '';
+
+/* ⭐ NEW: build similar drugs section ⭐ */
+const similarDrugsBlock = renderSimilarDrugs(drug);
+/* ⭐ END NEW ⭐ */
 
 return `
 <div class="drug-header">
@@ -397,6 +407,7 @@ ${headerLinks}
 ${laymanBlock}
 <h3 style="margin-top:20px;">Common & Serious Side Effects</h3>
 <div class="side-effects-list">${seChips}</div>
+${similarDrugsBlock}
 </div>
 <div class="panel bodymap-wrap">
 <h3 style="align-self:flex-start;">Areas of the Body Affected</h3>
@@ -429,20 +440,57 @@ ${otherDrugsBlock}
 <div class="source-note"><span class="source-dot"></span>${d.source === 'live' ? 'Live search result' : 'Sample data'}</div>
 `;
 }
+
+/* ⭐ NEW: renders the "Other Brands, Same Active Ingredient" list ⭐ */
+function renderSimilarDrugs(drugKey){
+const d = DB[drugKey];
+if(!d.similarDrugs || d.similarDrugs.length === 0) return '';
+const others = d.similarDrugs.filter(name => name.toLowerCase() !== d.brand.toLowerCase());
+if(others.length === 0) return '';
+const linksHTML = others.map(name =>
+`<a href="#" class="similar-drug-link" data-similar="${name}">${name}</a>`
+).join('');
+return `
+<div class="similar-drugs-wrap">
+<h3>Other Brands with the Same Active Ingredient</h3>
+<div class="similar-drugs-list">${linksHTML}</div>
+</div>`;
+}
+/* ⭐ END NEW ⭐ */
+
 /* ============================================================
-LIVE BACKEND CONNECTION — do not modify, this is working.
+LIVE BACKEND CONNECTION — do not modify core fetch logic.
+⭐ UPDATED: now also fetches similar drugs after main lookup ⭐
 ============================================================ */
 async function lookupDrug(query) {
-  try {
-    const res = await fetch(`https://medlens-backend-tqmk.onrender.com/api/drug/${encodeURIComponent(query)}`);
-    if (!res.ok) return null;
-    const data = await res.json();
-    DB[query.trim().toLowerCase()] = data;
-    return query.trim().toLowerCase();
-  } catch (err) {
-    console.error("Lookup failed:", err);
-    return null;
-  }
+try {
+const res = await fetch(`https://medlens-backend-tqmk.onrender.com/api/drug/${encodeURIComponent(query)}`);
+if (!res.ok) return null;
+const data = await res.json();
+const key = query.trim().toLowerCase();
+DB[key] = data;
+
+/* ⭐ NEW: fetch similar drugs based on generic name ⭐ */
+const genericName = data.generic;
+if (genericName) {
+try {
+const simRes = await fetch(`https://medlens-backend-tqmk.onrender.com/api/similar/${encodeURIComponent(genericName)}`);
+if (simRes.ok) {
+const simData = await simRes.json();
+DB[key].similarDrugs = simData.similar || [];
+}
+} catch (simErr) {
+console.error("Similar drug lookup failed:", simErr);
+DB[key].similarDrugs = [];
+}
+}
+/* ⭐ END NEW ⭐ */
+
+return key;
+} catch (err) {
+console.error("Lookup failed:", err);
+return null;
+}
 }
 async function doSearch(query){
 const loading = document.getElementById('loading');
@@ -458,6 +506,7 @@ disclaimer.style.display = 'block';
 if(key){
 card.innerHTML = renderResult(key);
 card.classList.add('show');
+attachSimilarDrugListeners(); /* ⭐ NEW: wire up click handlers after render ⭐ */
 } else {
 card.innerHTML = `<div class="panel" style="text-align:center; padding:50px;">
 <div style="font-size:32px;margin-bottom:10px;">🔎</div>
@@ -469,6 +518,20 @@ Try checking spelling, or search by generic name instead of brand name.
 card.classList.add('show');
 }
 }
+
+/* ⭐ NEW: click handler for similar drug links ⭐ */
+function attachSimilarDrugListeners(){
+document.querySelectorAll('.similar-drug-link').forEach(link => {
+link.addEventListener('click', async (e) => {
+e.preventDefault();
+const drugName = link.dataset.similar;
+document.getElementById('searchInput').value = drugName;
+await doSearch(drugName);
+});
+});
+}
+/* ⭐ END NEW ⭐ */
+
 document.getElementById('searchBtn').addEventListener('click', ()=>{
 const q = document.getElementById('searchInput').value;
 if(q.trim()) doSearch(q);
