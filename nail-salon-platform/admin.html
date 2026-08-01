@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — NailConnect USA</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-row">
+    <a class="brand" href="index.html">
+      <span class="mark">NC</span>
+      <span>
+        <span class="name">NailConnect</span>
+        <span class="tagline">Admin Console</span>
+      </span>
+    </a>
+    <div class="header-actions" style="margin-left:auto;">
+      <div class="lang-toggle">
+        <button data-lang="en">EN</button>
+        <button data-lang="vi">VI</button>
+      </div>
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;">A</div>
+      <button class="mobile-menu-toggle" id="sidebarToggle">☰ Menu</button>
+    </div>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-label">Admin</div>
+    <a href="#" class="active"><span>📊</span><span data-i18n="admin.nav.dashboard">Dashboard</span></a>
+    <a href="#"><span>👥</span><span data-i18n="admin.nav.users">Users</span></a>
+    <a href="#"><span>📋</span><span data-i18n="admin.nav.listings">Listings</span></a>
+    <a href="#"><span>🛡️</span><span data-i18n="admin.nav.moderation">Moderation Queue</span></a>
+    <a href="#"><span>💳</span><span data-i18n="admin.nav.payments">Payments</span></a>
+    <a href="#"><span>📈</span><span data-i18n="admin.nav.reports">Reports</span></a>
+    <a href="#"><span>⚙️</span><span data-i18n="admin.nav.settings">Settings</span></a>
+  </aside>
+
+  <div class="dash-main">
+    <h1 data-i18n="admin.title">Admin Overview</h1>
+    <div class="dash-sub" data-i18n="admin.sub">Platform-wide activity and moderation queue.</div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val">18,204</div>
+        <div class="stat-lbl" data-i18n="admin.stat.users">Total Users</div>
+        <div class="stat-delta up">▲ 4.2% this month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">6,512</div>
+        <div class="stat-lbl" data-i18n="admin.stat.listings">Active Listings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">$41,980</div>
+        <div class="stat-lbl" data-i18n="admin.stat.revenue">Monthly Revenue</div>
+        <div class="stat-delta up">▲ 9% vs last month</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">23</div>
+        <div class="stat-lbl" data-i18n="admin.stat.pending">Pending Approval</div>
+        <div class="stat-delta down">Needs review</div>
+      </div>
+    </div>
+
+    <div class="table-wrap mt-24">
+      <h3 style="margin:0;padding:14px 14px 0;font-size:15px;" data-i18n="admin.mod.title">Listings Awaiting Approval</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th data-i18n="th.listing">Listing</th>
+            <th data-i18n="th.user">User</th>
+            <th data-i18n="th.type">Type</th>
+            <th data-i18n="th.date">Date</th>
+            <th data-i18n="th.actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Golden Nails Studio — For Sale</b></td>
+            <td>tran.nguyen@gmail.com</td>
+            <td>Salon For Sale</td>
+            <td>Aug 1, 2026</td>
+            <td class="table-actions">
+              <button class="icon-btn approve" data-i18n="action.approve">Approve</button>
+              <button class="icon-btn reject" data-i18n="action.reject">Reject</button>
+            </td>
+          </tr>
+          <tr>
+            <td><b>Bella Nails Bar — Hiring Technician</b></td>
+            <td>owner.bella@gmail.com</td>
+            <td>Job Posting</td>
+            <td>Jul 31, 2026</td>
+            <td class="table-actions">
+              <button class="icon-btn approve" data-i18n="action.approve">Approve</button>
+              <button class="icon-btn reject" data-i18n="action.reject">Reject</button>
+            </td>
+          </tr>
+          <tr>
+            <td><b>Anh N. — Nail Artist Profile</b></td>
+            <td>anh.nguyen89@gmail.com</td>
+            <td>Seeking Work</td>
+            <td>Jul 31, 2026</td>
+            <td class="table-actions">
+              <button class="icon-btn approve" data-i18n="action.approve">Approve</button>
+              <button class="icon-btn reject" data-i18n="action.reject">Reject</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="table-wrap mt-24">
+      <h3 style="margin:0;padding:14px 14px 0;font-size:15px;" data-i18n="admin.pay.title">Recent Transactions</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th data-i18n="th.user">User</th>
+            <th data-i18n="th.plan">Plan</th>
+            <th data-i18n="th.amount">Amount</th>
+            <th>Method</th>
+            <th data-i18n="th.date">Date</th>
+            <th data-i18n="th.status">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>luxurynails.tx@gmail.com</td>
+            <td>Featured</td>
+            <td>$29.00</td>
+            <td>Visa •••• 4242</td>
+            <td>Aug 1, 2026</td>
+            <td><span class="status-pill status-active">Paid</span></td>
+          </tr>
+          <tr>
+            <td>perfect10dallas@gmail.com</td>
+            <td>Premium</td>
+            <td>$79.00</td>
+            <td>Apple Pay</td>
+            <td>Jul 30, 2026</td>
+            <td><span class="status-pill status-active">Paid</span></td>
+          </tr>
+          <tr>
+            <td>kimtnails@gmail.com</td>
+            <td>Featured</td>
+            <td>$29.00</td>
+            <td>Google Pay</td>
+            <td>Jul 29, 2026</td>
+            <td><span class="status-pill status-rejected">Failed</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

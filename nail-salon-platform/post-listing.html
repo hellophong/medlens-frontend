@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post a Listing — NailConnect USA</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-row">
+    <a class="brand" href="index.html">
+      <span class="mark">NC</span>
+      <span>
+        <span class="name">NailConnect</span>
+        <span class="tagline" data-i18n="brand.tagline">Nail Salon Jobs &amp; Directory</span>
+      </span>
+    </a>
+    <nav class="main-nav" id="mainNav">
+      <a href="index.html" data-i18n="nav.jobs">Find Jobs</a>
+      <a href="post-listing.html" class="active" data-i18n="nav.post">Post a Listing</a>
+      <a href="index.html#forsale" data-i18n="nav.forsale">Salons For Sale</a>
+      <a href="index.html#directory" data-i18n="nav.directory">Salon Directory</a>
+      <a href="post-listing.html#plans" data-i18n="nav.pricing">Pricing</a>
+    </nav>
+    <div class="header-actions">
+      <div class="lang-toggle">
+        <button data-lang="en">EN</button>
+        <button data-lang="vi">VI</button>
+      </div>
+      <a href="dashboard.html" class="btn btn-outline desktop-only" data-i18n="nav.login">Log In</a>
+      <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<main class="page" style="max-width:820px;">
+  <div class="text-center" style="margin-bottom:26px;">
+    <h1 style="font-size:26px;margin:0 0 6px;" data-i18n="post.title">Create a Listing</h1>
+    <p class="muted" data-i18n="post.sub">List a job, your services, or a salon for sale in a few minutes.</p>
+  </div>
+
+  <form id="listingForm">
+    <!-- Step 1 -->
+    <div class="panel mt-24">
+      <div class="step-title"><span class="step-num">1</span><span data-i18n="post.step1">What are you posting?</span></div>
+      <div class="type-card-row">
+        <div class="type-card selected">
+          <div class="icon">💅</div>
+          <div class="label" data-i18n="post.type.job">Hiring a Technician</div>
+        </div>
+        <div class="type-card">
+          <div class="icon">🙋</div>
+          <div class="label" data-i18n="post.type.seeking">Looking for Work</div>
+        </div>
+        <div class="type-card">
+          <div class="icon">🏪</div>
+          <div class="label" data-i18n="post.type.forsale">Salon For Sale</div>
+        </div>
+        <div class="type-card">
+          <div class="icon">📍</div>
+          <div class="label" data-i18n="post.type.directory">Add to Directory</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="panel mt-24">
+      <div class="step-title"><span class="step-num">2</span><span data-i18n="post.step2">Business / Listing Details</span></div>
+
+      <div class="form-row">
+        <label data-i18n="post.label.name">Business or Listing Title</label>
+        <input type="text" required placeholder="e.g. Luxury Nails & Spa">
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-row">
+          <label data-i18n="post.label.phone">Phone Number</label>
+          <input type="tel" required placeholder="(555) 123-4567">
+        </div>
+        <div class="form-row">
+          <label data-i18n="post.label.address">Street Address</label>
+          <input type="text" placeholder="123 Main St">
+        </div>
+      </div>
+
+      <div class="form-grid-2" style="grid-template-columns:2fr 1fr 1fr;">
+        <div class="form-row">
+          <label data-i18n="post.label.city">City</label>
+          <input type="text" required placeholder="Houston">
+        </div>
+        <div class="form-row">
+          <label data-i18n="post.label.state">State</label>
+          <input type="text" required placeholder="TX">
+        </div>
+        <div class="form-row">
+          <label data-i18n="post.label.zip">ZIP Code</label>
+          <input type="text" required placeholder="77036">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <label data-i18n="post.label.desc">Description</label>
+        <textarea rows="4" placeholder="Describe the position, salon, or your experience..."></textarea>
+        <div class="hint" data-i18n="post.label.desc.hint">Tell people about the position, salon, or your experience.</div>
+      </div>
+
+      <div class="form-row">
+        <label data-i18n="post.label.social">Social Links (Facebook, Instagram, Zalo)</label>
+        <input type="text" placeholder="https://facebook.com/yoursalon">
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="panel mt-24">
+      <div class="step-title"><span class="step-num">3</span><span data-i18n="post.step3">Add Photos</span></div>
+      <div class="dropzone">📷 <span data-i18n="post.dropzone">Click or drag photos here to upload</span></div>
+      <div class="thumb-row">
+        <div class="thumb">📷</div>
+        <div class="thumb">📷</div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="panel mt-24" id="plans">
+      <div class="step-title"><span class="step-num">4</span><span data-i18n="post.step4">Choose a Plan</span></div>
+      <div class="plan-row">
+        <div class="plan-card">
+          <div class="plan-name" data-i18n="plan.free.name">Basic</div>
+          <div class="plan-price" data-i18n="plan.free.price">Free</div>
+          <ul>
+            <li>✓ <span data-i18n="plan.free.f1">1 active listing</span></li>
+            <li>✓ <span data-i18n="plan.free.f2">30 days visibility</span></li>
+            <li>✓ <span data-i18n="plan.free.f3">Standard placement</span></li>
+          </ul>
+        </div>
+        <div class="plan-card selected">
+          <span class="plan-badge" data-i18n="badge.featured">Featured</span>
+          <div class="plan-name" data-i18n="plan.featured.name">Featured</div>
+          <div class="plan-price">$29<span>/mo</span></div>
+          <ul>
+            <li>✓ <span data-i18n="plan.featured.f1">Top of search results</span></li>
+            <li>✓ <span data-i18n="plan.featured.f2">60 days visibility</span></li>
+            <li>✓ <span data-i18n="plan.featured.f3">Highlighted badge</span></li>
+          </ul>
+        </div>
+        <div class="plan-card">
+          <div class="plan-name" data-i18n="plan.premium.name">Premium</div>
+          <div class="plan-price">$79<span>/mo</span></div>
+          <ul>
+            <li>✓ <span data-i18n="plan.premium.f1">Homepage placement</span></li>
+            <li>✓ <span data-i18n="plan.premium.f2">90 days visibility</span></li>
+            <li>✓ <span data-i18n="plan.premium.f3">Priority support</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: Payment -->
+    <div class="panel mt-24">
+      <div class="step-title"><span class="step-num">5</span><span data-i18n="post.step5">Payment</span></div>
+
+      <div class="pay-methods">
+        <div class="pay-method selected" data-method="card">💳 <span data-i18n="pay.card">Credit / Debit Card</span></div>
+        <div class="pay-method" data-method="applepay"> <span data-i18n="pay.applepay">Apple Pay</span></div>
+        <div class="pay-method" data-method="googlepay"> <span data-i18n="pay.googlepay">Google Pay</span></div>
+      </div>
+
+      <div id="cardFields">
+        <div class="form-row">
+          <label data-i18n="pay.cardnum">Card Number</label>
+          <input type="text" inputmode="numeric" placeholder="4242 4242 4242 4242">
+        </div>
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label data-i18n="pay.expiry">Expiry Date</label>
+            <input type="text" placeholder="MM / YY">
+          </div>
+          <div class="form-row">
+            <label data-i18n="pay.cvc">CVC</label>
+            <input type="text" inputmode="numeric" placeholder="123">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-gold btn-block" style="padding:14px;font-size:15px;margin-top:6px;" data-i18n="pay.submit">Confirm &amp; Publish Listing</button>
+      <p class="hint text-center mt-24" style="margin-top:12px;" data-i18n="pay.securenote">🔒 Payments are securely processed. We never store your card details.</p>
+    </div>
+  </form>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-bottom" style="border-top:none;margin:0 auto;">
+    <span>© 2026 NailConnect USA. <span data-i18n="footer.rights">All rights reserved.</span></span>
+  </div>
+</footer>
+
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

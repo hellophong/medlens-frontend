@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dashboard — NailConnect USA</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-row">
+    <a class="brand" href="index.html">
+      <span class="mark">NC</span>
+      <span>
+        <span class="name">NailConnect</span>
+        <span class="tagline" data-i18n="brand.tagline">Nail Salon Jobs &amp; Directory</span>
+      </span>
+    </a>
+    <div class="header-actions" style="margin-left:auto;">
+      <div class="lang-toggle">
+        <button data-lang="en">EN</button>
+        <button data-lang="vi">VI</button>
+      </div>
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;">LT</div>
+      <button class="mobile-menu-toggle" id="sidebarToggle">☰ Menu</button>
+    </div>
+  </div>
+</header>
+
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-label">Menu</div>
+    <a href="#" class="active"><span>📊</span><span data-i18n="dash.nav.overview">Overview</span></a>
+    <a href="#"><span>📋</span><span data-i18n="dash.nav.listings">My Listings</span></a>
+    <a href="#"><span>💬</span><span data-i18n="dash.nav.messages">Messages</span></a>
+    <a href="#"><span>💳</span><span data-i18n="dash.nav.billing">Billing &amp; Payments</span></a>
+    <a href="#"><span>⚙️</span><span data-i18n="dash.nav.profile">Profile Settings</span></a>
+    <div class="sidebar-label">&nbsp;</div>
+    <a href="index.html"><span>🏠</span><span>Back to Site</span></a>
+  </aside>
+
+  <div class="dash-main">
+    <h1 data-i18n="dash.title">My Dashboard</h1>
+    <div class="dash-sub" data-i18n="dash.sub">Manage your listings, messages, and billing.</div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-val">2,431</div>
+        <div class="stat-lbl" data-i18n="dash.stat.views">Total Views</div>
+        <div class="stat-delta up">▲ 12% this week</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">3</div>
+        <div class="stat-lbl" data-i18n="dash.stat.active">Active Listings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">7</div>
+        <div class="stat-lbl" data-i18n="dash.stat.messages">New Messages</div>
+        <div class="stat-delta up">▲ 2 today</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">$58</div>
+        <div class="stat-lbl" data-i18n="dash.stat.spend">Total Spend</div>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <div class="card-toolbar" style="padding:14px 14px 0;">
+        <h3 style="margin:0;font-size:15px;" data-i18n="dash.table.title">My Listings</h3>
+        <a href="post-listing.html" class="btn btn-primary btn-sm" data-i18n="dash.new">+ New Listing</a>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th data-i18n="th.listing">Listing</th>
+            <th data-i18n="th.type">Type</th>
+            <th data-i18n="th.status">Status</th>
+            <th data-i18n="th.views">Views</th>
+            <th data-i18n="th.posted">Posted</th>
+            <th data-i18n="th.actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Luxury Nails &amp; Spa — Nail Technician</b></td>
+            <td>Job</td>
+            <td><span class="status-pill status-active">Active</span></td>
+            <td>1,204</td>
+            <td>Jul 28, 2026</td>
+            <td class="table-actions">
+              <button class="icon-btn" data-i18n="action.edit">Edit</button>
+              <button class="icon-btn" data-i18n="action.renew">Renew</button>
+            </td>
+          </tr>
+          <tr>
+            <td><b>Luxury Nails &amp; Spa — Pedicure Specialist</b></td>
+            <td>Job</td>
+            <td><span class="status-pill status-pending">Pending Review</span></td>
+            <td>0</td>
+            <td>Aug 1, 2026</td>
+            <td class="table-actions">
+              <button class="icon-btn" data-i18n="action.edit">Edit</button>
+            </td>
+          </tr>
+          <tr>
+            <td><b>Front Desk Receptionist</b></td>
+            <td>Job</td>
+            <td><span class="status-pill status-expired">Expired</span></td>
+            <td>842</td>
+            <td>Jun 2, 2026</td>
+            <td class="table-actions">
+              <button class="icon-btn" data-i18n="action.renew">Renew</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/i18n.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+  // Overwrite generic "Status" text for the pill in row 1 to keep demo readable
+  document.addEventListener("langchange", (e)=>{
+    const pill = document.querySelector(".status-active");
+    if(pill) pill.textContent = e.detail.lang === "vi" ? "Hoạt Động" : "Active";
+  });
+</script>
+</body>
+</html>
