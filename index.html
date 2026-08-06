@@ -114,6 +114,15 @@ main{ max-width:1100px; margin:0 auto; padding:36px 24px 80px; }
 .similar-drug-link:hover{ background:var(--accent); color:#fff; }
 .disclaimer{margin-top:28px; font-size:11.5px; color:var(--muted); background:var(--panel); border:1px dashed var(--border); border-radius:12px; padding:14px 18px; line-height:1.6;}
 .disclaimer b{ color:var(--text); }
+.trial-banner{ display:flex; align-items:flex-start; gap:14px; background:var(--accent-soft); border:1.5px solid var(--accent); border-radius:var(--radius); padding:18px 22px; margin-bottom:20px; box-shadow:var(--shadow); }
+.trial-banner-icon{ font-size:22px; line-height:1; flex-shrink:0; }
+.trial-banner-body{ flex:1; min-width:0; }
+.trial-banner-title{ font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.5px; color:var(--accent); margin:0 0 4px; }
+.trial-banner-text{ font-size:13px; line-height:1.55; color:var(--text); margin:0 0 10px; }
+.trial-banner-meta{ display:flex; gap:8px; flex-wrap:wrap; }
+.trial-meta-chip{ font-size:11px; font-weight:700; padding:4px 11px; border-radius:999px; background:var(--panel); border:1px solid var(--accent); color:var(--accent); text-transform:uppercase; letter-spacing:.4px; }
+.trial-meta-chip.trial-meta-link{ text-decoration:none; cursor:pointer; transition:all .2s; }
+.trial-meta-chip.trial-meta-link:hover{ background:var(--accent); color:#fff; }
 .source-note{ display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); margin-top:16px; justify-content:flex-end; }
 .source-dot{ width:6px;height:6px;border-radius:50%; background:#00C2A8; }
 footer{ text-align:center; padding:26px; font-size:11px; color:var(--muted); border-top:1px solid var(--border); }
@@ -213,9 +222,19 @@ const linksHTML = others.map(name => `<a href="#" class="similar-drug-link" data
 return `<div class="similar-drugs-wrap"><h3>Other Brands with the Same Active Ingredient</h3><div class="similar-drugs-list">${linksHTML}</div></div>`;
 }
 
+function renderTrialBanner(d){
+if(d.source !== 'trial') return '';
+const phase = d.trialPhase || 'Not Applicable';
+const status = d.trialStatus || 'Status Unknown';
+const nct = d.nctId || 'N/A';
+const url = d.studyUrl || 'https://clinicaltrials.gov/';
+return `<div class="trial-banner"><div class="trial-banner-icon">🧪</div><div class="trial-banner-body"><div class="trial-banner-title">Investigational — Not FDA-Approved</div><p class="trial-banner-text">This drug has not been approved by the FDA. Information below is drawn from a registered clinical trial and AI interpretation, not an approved product label — dosing, side effects, and other details are preliminary and subject to change.</p><div class="trial-banner-meta"><span class="trial-meta-chip">NCT ID: ${nct}</span><span class="trial-meta-chip">${phase}</span><span class="trial-meta-chip">${status}</span><a href="${url}" target="_blank" rel="noopener noreferrer" class="trial-meta-chip trial-meta-link">View Study Record ↗</a></div></div></div>`;
+}
+
 function renderResult(drug){
 const d = DB[drug];
 if(!d) return null;
+const isTrial = d.source === 'trial';
 document.documentElement.style.setProperty('--accent', d.accent || '#0066CC');
 document.documentElement.style.setProperty('--accent-soft', (d.accent || '#0066CC') + '1a');
 const legendItems = (d.bodyZones||[]).map(z=>`<div class="zone-legend-item"><span class="zone-legend-dot"></span>${d.bodyZoneLabels ? d.bodyZoneLabels[z] : z}</div>`).join('');
@@ -230,12 +249,18 @@ const laymanBlock = layman ? `<div class="layman-box"><div class="label-row"><sp
 const otherDrugsBlock = otherDrugsList ? `<div class="other-drugs-wrap"><h4>Other Drugs by ${d.company}</h4><div class="other-drugs-list">${otherDrugsList.map(od=>`<span class="other-drug-chip">${od}</span>`).join('')}</div></div>` : '';
 const companyWebsiteLinkBlock = companySite ? `<a class="company-website-link" href="${companySite}" target="_blank" rel="noopener noreferrer">🔗 Visit ${d.company} Website</a>` : '';
 const similarDrugsBlock = renderSimilarDrugs(drug);
-return `<div class="drug-header"><div class="drug-title-block"><h2>${d.brand}</h2><div class="drug-generic">${d.generic}</div><div class="drug-tags"><span class="tag">${d.route}</span><span class="tag class-tag">${d.drugClass}</span><span class="tag">${d.frequency}</span></div>${headerLinks}</div><div class="confidence-note">Summary generated from FDA label data and AI interpretation. Verify against current prescribing information.</div></div>
-<div class="grid-2"><div class="panel"><h3>Indication Summary</h3><p>${d.indication}</p>${laymanBlock}<h3 style="margin-top:20px;">Common & Serious Side Effects</h3><div class="side-effects-list">${seChips}</div>${similarDrugsBlock}</div>
+const trialBanner = renderTrialBanner(d);
+const confidenceText = isTrial
+? 'Summary generated from a ClinicalTrials.gov study record and AI interpretation. This is not an FDA-approved product label.'
+: 'Summary generated from FDA label data and AI interpretation. Verify against current prescribing information.';
+const sideEffectsHeading = isTrial ? 'Reported Safety Signals (Not Yet Established)' : 'Common & Serious Side Effects';
+const sourceLabel = d.source === 'live' ? 'Live search result' : d.source === 'trial' ? 'Clinical trial data (investigational)' : 'Sample data';
+return `${trialBanner}<div class="drug-header"><div class="drug-title-block"><h2>${d.brand}</h2><div class="drug-generic">${d.generic}</div><div class="drug-tags"><span class="tag">${d.route}</span><span class="tag class-tag">${d.drugClass}</span><span class="tag">${d.frequency}</span></div>${headerLinks}</div><div class="confidence-note">${confidenceText}</div></div>
+<div class="grid-2"><div class="panel"><h3>Indication Summary</h3><p>${d.indication}</p>${laymanBlock}<h3 style="margin-top:20px;">${sideEffectsHeading}</h3><div class="side-effects-list">${seChips}</div>${similarDrugsBlock}</div>
 <div class="panel bodymap-wrap"><h3 style="align-self:flex-start;">Areas of the Body Affected</h3><div class="bodymap">${renderBodyMap(d.bodyZones||[])}</div><div class="zone-legend">${legendItems}</div></div></div>
 <div class="grid-2"><div class="panel"><h3>Patient Resources & Support</h3>${resourceItems}</div>
 <div class="panel"><h3>Parent Company</h3><div class="company-card"><div class="company-logo-mark">${d.companyInitials}</div><div class="company-meta"><h4>${d.company}</h4><span>${d.companyFocus}</span></div></div><div class="stat-row"><div class="stat"><div class="val">${d.companyFounded}</div><div class="lbl">Founded</div></div><div class="stat"><div class="val" style="font-size:13px;">${d.companyHQ}</div><div class="lbl">Headquarters</div></div></div>${companyWebsiteLinkBlock}${otherDrugsBlock}</div></div>
-<div class="source-note"><span class="source-dot"></span>${d.source === 'live' ? 'Live search result' : 'Sample data'}</div>`;
+<div class="source-note"><span class="source-dot"></span>${sourceLabel}</div>`;
 }
 
 async function lookupDrug(query) {
@@ -266,6 +291,10 @@ card.classList.remove('show');
 loading.classList.add('show');
 const key = await lookupDrug(query);
 loading.classList.remove('show');
+const isTrialResult = !!(key && DB[key] && DB[key].source === 'trial');
+disclaimer.innerHTML = isTrialResult
+? '<b>Data notice:</b> This result is drawn from a registered clinical trial on ClinicalTrials.gov, not an approved FDA product label. The drug discussed is investigational and not yet approved for any use — always verify current trial status and speak with a healthcare provider before making decisions based on this information.'
+: '<b>Data notice:</b> Summaries are generated from public FDA label data and AI interpretation. Always verify against current official prescribing information before clinical or promotional use.';
 disclaimer.style.display = 'block';
 if(key){
 card.innerHTML = renderResult(key);
