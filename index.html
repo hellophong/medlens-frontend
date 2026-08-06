@@ -240,24 +240,15 @@ return `<div class="drug-header"><div class="drug-title-block"><h2>${d.brand}</h
 
 async function lookupDrug(query) {
 try {
+// The backend now runs the similar-drugs lookup in parallel with the
+// LLM summary and returns it inline as data.similarDrugs, so this is
+// a single round trip instead of two sequential fetches.
 const res = await fetch(`https://medlens-backend-tqmk.onrender.com/api/drug/${encodeURIComponent(query)}`);
 if (!res.ok) return null;
 const data = await res.json();
 const key = query.trim().toLowerCase();
+data.similarDrugs = data.similarDrugs || [];
 DB[key] = data;
-const genericName = data.generic;
-if (genericName) {
-try {
-const simRes = await fetch(`https://medlens-backend-tqmk.onrender.com/api/similar/${encodeURIComponent(genericName)}`);
-if (simRes.ok) {
-const simData = await simRes.json();
-DB[key].similarDrugs = simData.similar || [];
-}
-} catch (simErr) {
-console.error("Similar drug lookup failed:", simErr);
-DB[key].similarDrugs = [];
-}
-}
 return key;
 } catch (err) {
 console.error("Lookup failed:", err);
