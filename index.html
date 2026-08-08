@@ -104,6 +104,8 @@ main{ max-width:1100px; margin:0 auto; padding:36px 24px 80px; }
 .other-drugs-wrap h4{ margin:0 0 10px; font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:var(--muted); font-weight:700; }
 .other-drugs-list{ display:flex; flex-wrap:wrap; gap:8px; }
 .other-drug-chip{ font-size:12px; padding:6px 13px; border-radius:999px; background:var(--bg); border:1px solid var(--border); font-weight:600; }
+a.other-drug-chip{ display:inline-block; text-decoration:none; color:var(--text); cursor:pointer; transition:all .2s; }
+a.other-drug-chip:hover{ background:var(--accent); color:#fff; border-color:var(--accent); }
 .side-effects-list{ display:flex; flex-wrap:wrap; gap:8px; }
 .se-chip{ font-size:12px; padding:6px 12px; border-radius:8px; background:var(--bg); border:1px solid var(--border); }
 .se-chip.serious{ background:#e7004c1a; color:#e7004c; border-color:#e7004c40; font-weight:700; }
@@ -351,7 +353,15 @@ const layman = d.laymanSummary || null;
 const otherDrugsList = (d.otherDrugs && d.otherDrugs.length) ? d.otherDrugs : null;
 const headerLinks = `<div class="header-links">${drugSite ? `<a class="link-btn" href="${drugSite}" target="_blank" rel="noopener noreferrer">🔗 Official Drug Site</a>` : ''}${companySite ? `<a class="link-btn secondary" href="${companySite}" target="_blank" rel="noopener noreferrer">🏢 Company Site</a>` : ''}</div>`;
 const laymanBlock = layman ? `<div class="layman-box"><div class="label-row"><span class="emoji">💬</span><b>In Simple Terms</b></div><p>${layman}</p></div>` : '';
-const otherDrugsBlock = otherDrugsList ? `<div class="other-drugs-wrap"><h4>Other Drugs by ${d.company}</h4><div class="other-drugs-list">${otherDrugsList.map(od=>`<span class="other-drug-chip">${od}</span>`).join('')}</div></div>` : '';
+const otherDrugsBlock = otherDrugsList ? `<div class="other-drugs-wrap"><h4>Other Drugs by ${d.company}</h4><div class="other-drugs-list">${otherDrugsList.map(od=>{
+const name = String(od == null ? '' : od).trim();
+if(!name) return '';
+// "No other approved products" is a status message the model returns
+// for companies with nothing else on the market — not a drug, so it
+// must stay plain text rather than becoming a dead search link.
+if(/^no other\b/i.test(name)) return `<span class="other-drug-chip">${esc(name)}</span>`;
+return `<a href="#" class="other-drug-chip other-drug-link" data-drug-query="${esc(name)}">${esc(name)}</a>`;
+}).join('')}</div></div>` : '';
 const companyWebsiteLinkBlock = companySite ? `<a class="company-website-link" href="${companySite}" target="_blank" rel="noopener noreferrer">🔗 Visit ${d.company} Website</a>` : '';
 const similarDrugsBlock = renderSimilarDrugs(drug);
 const trialBanner = renderTrialBanner(d);
@@ -405,7 +415,7 @@ disclaimer.style.display = 'block';
 if(key){
 card.innerHTML = renderResult(key);
 card.classList.add('show');
-attachSimilarDrugListeners();
+attachDrugLinkListeners();
 // Fired after the card is already on screen — news never blocks the
 // main result, so a slow feed can't make search feel slower.
 loadCoverage(query);
@@ -415,12 +425,20 @@ card.classList.add('show');
 }
 }
 
-function attachSimilarDrugListeners(){
-document.querySelectorAll('.similar-drug-link').forEach(link => {
+// Handles both the "Other Brands with the Same Active Ingredient"
+// links and the "Other Drugs by <Company>" chips — clicking either
+// runs it as a fresh MEDLENS search.
+function attachDrugLinkListeners(){
+document.querySelectorAll('.similar-drug-link, .other-drug-link').forEach(link => {
 link.addEventListener('click', async (e) => {
 e.preventDefault();
-const drugName = link.dataset.similar;
+const drugName = link.dataset.similar || link.dataset.drugQuery;
+if(!drugName) return;
 document.getElementById('searchInput').value = drugName;
+// These links sit near the bottom of a long card; without this the
+// new result renders with the viewport still scrolled down inside it.
+const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' });
 await doSearch(drugName);
 });
 });
