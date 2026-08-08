@@ -384,9 +384,22 @@ try {
 // The backend now runs the similar-drugs lookup in parallel with the
 // LLM summary and returns it inline as data.similarDrugs, so this is
 // a single round trip instead of two sequential fetches.
+const t0 = performance.now();
 const res = await fetch(`https://medlens-backend-tqmk.onrender.com/api/drug/${encodeURIComponent(query)}`);
 if (!res.ok) return null;
 const data = await res.json();
+// Where the wait actually went. Open the browser console (F12) after a
+// search to see the split: a large gap between roundTrip and server
+// total means the container was asleep, not that the lookup was slow.
+const roundTripMs = Math.round(performance.now() - t0);
+if(data._timing){
+console.log(`[MEDLENS] "${query}" — round trip ${roundTripMs}ms | server ${data._timing.totalMs}ms`, data._timing);
+if(data._timing.uptimeMs < 60000){
+console.warn(`[MEDLENS] Server had only been awake ${Math.round(data._timing.uptimeMs/1000)}s — this search paid a cold-start penalty.`);
+}
+} else {
+console.log(`[MEDLENS] "${query}" — round trip ${roundTripMs}ms (no server timing)`);
+}
 const key = query.trim().toLowerCase();
 data.similarDrugs = data.similarDrugs || [];
 DB[key] = data;
