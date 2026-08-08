@@ -123,6 +123,35 @@ main{ max-width:1100px; margin:0 auto; padding:36px 24px 80px; }
 .trial-meta-chip{ font-size:11px; font-weight:700; padding:4px 11px; border-radius:999px; background:var(--panel); border:1px solid var(--accent); color:var(--accent); text-transform:uppercase; letter-spacing:.4px; }
 .trial-meta-chip.trial-meta-link{ text-decoration:none; cursor:pointer; transition:all .2s; }
 .trial-meta-chip.trial-meta-link:hover{ background:var(--accent); color:#fff; }
+.coverage-panel{ margin-top:20px; }
+.coverage-panel > h3{ font-size:14px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin:0 0 4px; font-weight:700; }
+.coverage-sub-label{ font-size:11.5px; color:var(--muted); margin:0 0 16px; }
+.coverage-list{ display:flex; flex-direction:column; }
+.coverage-item{ display:block; text-decoration:none; color:inherit; padding:14px 0; border-top:1px solid var(--border); }
+.coverage-item:first-child{ border-top:none; padding-top:2px; }
+.coverage-item:hover .coverage-headline{ color:var(--accent); text-decoration:underline; }
+.coverage-meta{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+.coverage-outlet{ font-size:10.5px; font-weight:700; letter-spacing:.4px; text-transform:uppercase; color:var(--accent); background:var(--accent-soft); padding:3px 9px; border-radius:999px; }
+.coverage-date{ font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.coverage-headline{ font-size:14.5px; font-weight:700; line-height:1.35; margin:0 0 4px; color:var(--text); }
+.coverage-sub{ font-size:12.5px; line-height:1.55; color:var(--muted); margin:0; }
+.coverage-foot{ margin-top:16px; padding-top:13px; border-top:1px solid var(--border); font-size:11px; color:var(--muted); display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:center; }
+.coverage-foot a{ color:var(--accent); text-decoration:none; font-weight:700; }
+.coverage-foot a:hover{ text-decoration:underline; }
+.coverage-empty{ display:flex; gap:13px; align-items:flex-start; background:var(--bg); border:1px dashed var(--border); border-radius:12px; padding:16px 18px; }
+.coverage-empty-icon{ font-size:17px; line-height:1.2; flex-shrink:0; }
+.coverage-empty-title{ font-size:13px; font-weight:700; margin:0 0 3px; color:var(--text); }
+.coverage-empty-text{ font-size:12.5px; line-height:1.55; color:var(--muted); margin:0; }
+.coverage-empty-text a{ color:var(--accent); font-weight:700; text-decoration:none; }
+.coverage-empty-text a:hover{ text-decoration:underline; }
+.coverage-skel-row{ padding:14px 0; border-top:1px solid var(--border); }
+.coverage-skel-row:first-child{ border-top:none; padding-top:2px; }
+.sk{ background:var(--border); border-radius:5px; height:9px; animation:skpulse 1.4s ease-in-out infinite; }
+.sk.chip{ width:74px; height:15px; border-radius:999px; margin-bottom:8px; }
+.sk.l1{ width:92%; height:12px; margin-bottom:7px; }
+.sk.l2{ width:64%; }
+@keyframes skpulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+@media (prefers-reduced-motion:reduce){ .sk{ animation:none; } }
 .source-note{ display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); margin-top:16px; justify-content:flex-end; }
 .source-dot{ width:6px;height:6px;border-radius:50%; background:#00C2A8; }
 footer{ text-align:center; padding:26px; font-size:11px; color:var(--muted); border-top:1px solid var(--border); }
@@ -222,6 +251,82 @@ const linksHTML = others.map(name => `<a href="#" class="similar-drug-link" data
 return `<div class="similar-drugs-wrap"><h3>Other Brands with the Same Active Ingredient</h3><div class="similar-drugs-list">${linksHTML}</div></div>`;
 }
 
+const API_BASE = 'https://medlens-backend-tqmk.onrender.com';
+
+// Article text comes from a third-party news feed, so it's escaped
+// before going anywhere near innerHTML.
+function esc(s){
+return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+function safeUrl(u){
+const s = String(u || '');
+return /^https?:\/\//i.test(s) ? s : '#';
+}
+
+function renderCoverageSkeleton(){
+const row = '<div class="coverage-skel-row"><div class="sk chip"></div><div class="sk l1"></div><div class="sk l2"></div></div>';
+return `<div class="panel coverage-panel"><h3>Recent Coverage</h3><p class="coverage-sub-label">Looking for recent articles…</p><div>${row}${row}${row}</div></div>`;
+}
+
+function renderCoverageEmpty(status, searchUrl){
+const link = searchUrl ? ` <a href="${safeUrl(searchUrl)}" target="_blank" rel="noopener noreferrer">search Google News ↗</a>` : '';
+let icon, title, text;
+if(status === 'filtered'){
+icon = '🔎';
+title = 'No coverage from recognized outlets';
+text = 'Recent articles were found, but none from established news organizations or medical trade publications, so none are shown here.';
+} else if(status === 'error'){
+icon = '⚠️';
+title = "Couldn't load coverage right now";
+text = 'The news feed didn\'t respond. The rest of this drug summary is unaffected — try refreshing in a moment.';
+} else {
+icon = '📭';
+title = 'No recent news coverage found';
+text = `Nothing published about this drug in the last 12 months. Older or more specialized coverage may exist —${link || ''}`;
+}
+return `<div class="panel coverage-panel"><h3>Recent Coverage</h3><div class="coverage-empty"><span class="coverage-empty-icon">${icon}</span><div><p class="coverage-empty-title">${title}</p><p class="coverage-empty-text">${text}</p></div></div></div>`;
+}
+
+function renderCoverageArticles(data){
+const items = (data.articles || []).map(a => {
+const sub = a.subhead ? `<p class="coverage-sub">${esc(a.subhead)}</p>` : '';
+const date = a.date ? `<span class="coverage-date">${esc(a.date)}</span>` : '';
+return `<a class="coverage-item" href="${safeUrl(a.url)}" target="_blank" rel="noopener noreferrer"><div class="coverage-meta"><span class="coverage-outlet">${esc(a.outlet)}</span>${date}</div><p class="coverage-headline">${esc(a.headline)}</p>${sub}</a>`;
+}).join('');
+const more = data.searchUrl ? `<a href="${safeUrl(data.searchUrl)}" target="_blank" rel="noopener noreferrer">See more coverage ↗</a>` : '';
+return `<div class="panel coverage-panel"><h3>Recent Coverage</h3><p class="coverage-sub-label">Latest reporting from recognized news and industry outlets</p><div class="coverage-list">${items}</div><div class="coverage-foot"><span>Headlines via Google News · MEDLENS does not endorse or verify claims made in linked articles</span>${more}</div></div>`;
+}
+
+// Bumped on every search so a slow in-flight response can't paint
+// stale articles into a card the user has already moved past.
+let coverageRequestId = 0;
+
+async function loadCoverage(query){
+const mount = document.getElementById('coveragePanel');
+if(!mount) return;
+const reqId = ++coverageRequestId;
+mount.innerHTML = renderCoverageSkeleton();
+try{
+const res = await fetch(`${API_BASE}/api/news/${encodeURIComponent(query)}`);
+if(reqId !== coverageRequestId) return;
+if(!res.ok){
+mount.innerHTML = renderCoverageEmpty('error');
+return;
+}
+const data = await res.json();
+if(reqId !== coverageRequestId) return;
+if(data.articles && data.articles.length){
+mount.innerHTML = renderCoverageArticles(data);
+} else {
+mount.innerHTML = renderCoverageEmpty(data.status || 'none', data.searchUrl);
+}
+}catch(err){
+if(reqId !== coverageRequestId) return;
+console.error('Coverage lookup failed:', err);
+mount.innerHTML = renderCoverageEmpty('error');
+}
+}
+
 function renderTrialBanner(d){
 if(d.source !== 'trial') return '';
 const phase = d.trialPhase || 'Not Applicable';
@@ -260,6 +365,7 @@ return `${trialBanner}<div class="drug-header"><div class="drug-title-block"><h2
 <div class="panel bodymap-wrap"><h3 style="align-self:flex-start;">Areas of the Body Affected</h3><div class="bodymap">${renderBodyMap(d.bodyZones||[])}</div><div class="zone-legend">${legendItems}</div></div></div>
 <div class="grid-2"><div class="panel"><h3>Patient Resources & Support</h3>${resourceItems}</div>
 <div class="panel"><h3>Parent Company</h3><div class="company-card"><div class="company-logo-mark">${d.companyInitials}</div><div class="company-meta"><h4>${d.company}</h4><span>${d.companyFocus}</span></div></div><div class="stat-row"><div class="stat"><div class="val">${d.companyFounded}</div><div class="lbl">Founded</div></div><div class="stat"><div class="val" style="font-size:13px;">${d.companyHQ}</div><div class="lbl">Headquarters</div></div></div>${companyWebsiteLinkBlock}${otherDrugsBlock}</div></div>
+<div id="coveragePanel"></div>
 <div class="source-note"><span class="source-dot"></span>${sourceLabel}</div>`;
 }
 
@@ -300,6 +406,9 @@ if(key){
 card.innerHTML = renderResult(key);
 card.classList.add('show');
 attachSimilarDrugListeners();
+// Fired after the card is already on screen — news never blocks the
+// main result, so a slow feed can't make search feel slower.
+loadCoverage(query);
 } else {
 card.innerHTML = `<div class="panel" style="text-align:center; padding:50px;"><div style="font-size:32px;margin-bottom:10px;">🔎</div><b>No match found for "${query}"</b><p style="color:var(--muted); font-size:13px; margin-top:8px;">Try checking spelling, or search by generic name instead of brand name.</p></div>`;
 card.classList.add('show');
