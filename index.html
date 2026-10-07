@@ -33,18 +33,20 @@ input:checked + .slider::before{ transform:translateX(22px);}
 /* Hub link. The icon is inlined with fill="currentColor" rather than
    loaded as an <img>, so its color follows the CSS below and tracks
    light/dark and hover automatically — an <img> can't be recolored. */
-.hub-link{ display:inline-flex; align-items:center; gap:7px; height:34px; padding:0 14px; border-radius:999px; color:var(--muted); text-decoration:none; border:1px solid var(--border); transition:all .2s; flex-shrink:0; }
+.hub-link{ position:relative; display:flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:9px; color:var(--muted); text-decoration:none; border:1px solid var(--border); transition:color .2s, border-color .2s, background .2s; flex-shrink:0; }
 .hub-link:hover{ color:var(--accent); border-color:var(--accent); background:var(--accent-soft); }
 .hub-link:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
-.hub-link svg{ width:19px; height:19px; display:block; flex-shrink:0; }
-.hub-link-label{ font-size:12px; font-weight:700; letter-spacing:.2px; white-space:nowrap; }
-/* Narrow screens collapse to icon-only. The label is clipped rather
-   than display:none'd so it still supplies the link's accessible name
-   for screen readers at every width. */
-@media (max-width:720px){
-  .hub-link{ width:34px; padding:0; justify-content:center; }
-  .hub-link-label{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip-path:inset(50%); border:0; }
-}
+.hub-link svg{ width:20px; height:20px; display:block; }
+/* Styled tooltip instead of the native title attribute: appears at
+   once rather than after the browser's ~1s delay, matches the panel
+   styling, and also shows on keyboard focus. Hidden with opacity
+   rather than visibility/display so the text still supplies the
+   link's accessible name — the icon alone has none. */
+.hub-tip{ position:absolute; top:calc(100% + 10px); left:50%; transform:translateX(-50%) translateY(-3px); background:var(--panel); color:var(--text); border:1px solid var(--border); box-shadow:var(--shadow); font-size:11.5px; font-weight:700; letter-spacing:.2px; white-space:nowrap; padding:6px 11px; border-radius:8px; opacity:0; pointer-events:none; transition:opacity .15s ease, transform .15s ease; }
+.hub-tip::before{ content:""; position:absolute; bottom:100%; left:50%; margin-left:-5px; border:5px solid transparent; border-bottom-color:var(--border); }
+.hub-tip::after{ content:""; position:absolute; bottom:100%; left:50%; margin-left:-4px; border:4px solid transparent; border-bottom-color:var(--panel); }
+.hub-link:hover .hub-tip, .hub-link:focus-visible .hub-tip{ opacity:1; transform:translateX(-50%) translateY(0); }
+@media (prefers-reduced-motion:reduce){ .hub-tip{ transition:none; } }
 .hero{ max-width:900px; margin:50px auto 0; padding:0 24px; text-align:center;}
 .hero h1{ font-size:34px; font-weight:700; margin:0 0 8px; }
 .hero p{ color:var(--muted); font-size:14px; margin:0 0 26px; }
@@ -180,9 +182,9 @@ footer{ text-align:center; padding:26px; font-size:11px; color:var(--muted); bor
 <header class="topbar">
 <div class="logo"><span class="mark">ML</span>MEDLENS<span class="logo-sub">Drug Intelligence Dashboard</span></div>
 <div class="nav-right">
-<a class="hub-link" href="https://hellophong.github.io/pharma-lab/" title="Pharma Lab Hub">
+<a class="hub-link" href="https://hellophong.github.io/pharma-lab/">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" focusable="false"><path d="M220-180h150v-250h220v250h150v-390L480-765 220-570v390Zm-60 60v-480l320-240 320 240v480H530v-250H430v250H160Zm320-353Z"/></svg>
-<span class="hub-link-label">Pharma Lab</span>
+<span class="hub-tip">Pharma Lab</span>
 </a>
 <span class="nav-divider"></span>
 <div class="theme-row">
