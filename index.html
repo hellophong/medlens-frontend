@@ -53,7 +53,7 @@ input:checked + .slider::before{ transform:translateX(22px);}
 .search-wrap{ max-width:640px; margin:0 auto; position:relative; }
 .search-box{display:flex; align-items:center; gap:10px; background:var(--panel); border:1.5px solid var(--border); border-radius:999px; padding:8px 8px 8px 22px; box-shadow:var(--shadow); transition:border-color .2s;}
 .search-box:focus-within{ border-color:var(--accent); }
-.search-box input{flex:1; border:none; outline:none; background:transparent; font-family:inherit; font-size:15px; color:var(--text);}
+.search-box input{flex:1; min-width:0; border:none; outline:none; background:transparent; font-family:inherit; font-size:15px; color:var(--text);}
 .search-btn{background:var(--accent); color:#fff; border:none; border-radius:999px; padding:12px 26px; font-family:inherit; font-weight:700; font-size:13.5px; cursor:pointer; transition:all .2s; letter-spacing:.3px;}
 .search-btn:hover{ background:#0052a3; }
 .suggestions{display:flex; gap:8px; justify-content:center; margin-top:14px; flex-wrap:wrap;}
@@ -84,6 +84,16 @@ main{ max-width:1100px; margin:0 auto; padding:36px 24px 80px; }
 .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px; }
 .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:20px; }
 @media (max-width:800px){ .grid-2, .grid-3{ grid-template-columns:1fr; } }
+/* Narrow phones: the logo, its subtitle, the hub link and the theme
+   toggle together need more room than a ~380px bar has, which pushed
+   the nav a few px past the viewport. The subtitle is the secondary
+   element and was wrapping onto three lines anyway, so it steps aside
+   and the bar tightens up. */
+@media (max-width:600px){
+  header.topbar{ padding:14px 16px; }
+  .logo{ font-size:18px; }
+  .logo-sub{ display:none; }
+}
 .panel{ background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:24px 26px; box-shadow:var(--shadow); }
 .panel h3{ font-size:14px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin:0 0 14px; font-weight:700; }
 .panel p{ font-size:14px; line-height:1.65; color:var(--text); margin:0 0 10px; }
@@ -559,7 +569,7 @@ attachDrugLinkListeners();
 // Fired after the card is already on screen — news never blocks the
 // main result, so a slow feed can't make search feel slower.
 loadCoverage(query);
-if(mlAvatar) mlAvatar.setState('answering', answerLine((DB[key] && DB[key].brand) || query, rawQuery));
+if(mlAvatar) mlAvatar.setState('answering', answerLine((DB[key] && DB[key].brand) || query, rawQuery), ML_ANSWER_HOLD_MS);
 } else {
 card.innerHTML = `<div class="panel" style="text-align:center; padding:50px;"><div style="font-size:32px;margin-bottom:10px;">🔎</div><b>No match found for "${rawQuery}"</b><p style="color:var(--muted); font-size:13px; margin-top:8px;">Try checking spelling, or search by generic name instead of brand name.</p></div>`;
 card.classList.add('show');

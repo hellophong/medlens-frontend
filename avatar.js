@@ -10,8 +10,12 @@
    global scope when index.html wires them to the real search flow.
    ===================================================================== */
 
-function createMedLensAvatar(root) {
-  const bubble = root.querySelector('.ml-bubble');
+// How long the answering bubble stays up before fading out on its own.
+// Without a hold it sits there until the next search, which reads as
+// stuck once someone settles in to read the result card.
+const ML_ANSWER_HOLD_MS = 10 * 60 * 1000; // 10 minutes
+
+function createMedLensAvatar(root) {  const bubble = root.querySelector('.ml-bubble');
   const textEl = root.querySelector('.ml-bubble-text');
   const pupils = root.querySelectorAll('.ml-pupil');
   let slowTimer = null, hideTimer = null, beatTimer = null;
