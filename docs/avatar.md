@@ -47,9 +47,31 @@ Two states clear their own bubble on a timer, set by constants at the top of
 `idle`. `idle`, `attentive` and `thinking` show no bubble, except for the
 cold-start line `thinking` adds after six seconds.
 
-Hiding the bubble does not change `data-state` — the capsule keeps its
-expression until the next interaction, and typing in the search box returns it
-to `attentive` or `idle`.
+When a held bubble expires, the avatar also drops back to `idle` — otherwise the
+capsule would keep a worried or grinning face long after the message it belonged
+to had gone. That reset only applies to `answering` and `notfound`, and only if
+nothing else has moved the avatar on in the meantime, so typing during the hold
+still wins.
+
+### Tickle
+
+Clicking the capsule makes it grin, squint and bounce for about 0.9s. It's
+purely decorative: it doesn't change `data-state` and doesn't touch the speech
+bubble, so it can't interrupt a message mid-display.
+
+It works by toggling an `ml-tickle` class on `#mlAvatar`. Those rules sit at the
+end of `avatar.css` on purpose — they tie on specificity with the per-state
+rules, so source order is what lets them win while the class is applied. The
+handler also clears `ml-beat` first, since the idle-stretch selector outranks
+them.
+
+Only the drawn capsule is clickable, not the whole SVG box: `pointer-events` is
+re-enabled on `.ml-react` rather than the `<svg>`, so SVG hit-testing reacts to
+painted pixels only and clicks through the transparent corners still reach the
+page underneath.
+
+Under `prefers-reduced-motion` the bounce and squint are suppressed and only the
+grin remains.
 
 ## Where the code lives
 

@@ -22,15 +22,25 @@ const ML_NOTFOUND_HOLD_MS = 10 * 1000; // 10 seconds
 function createMedLensAvatar(root) {  const bubble = root.querySelector('.ml-bubble');
   const textEl = root.querySelector('.ml-bubble-text');
   const pupils = root.querySelectorAll('.ml-pupil');
-  let slowTimer = null, hideTimer = null, beatTimer = null;
+  let slowTimer = null, hideTimer = null, beatTimer = null, tickleTimer = null;
 
   function say(text, holdMs) {
     clearTimeout(hideTimer);
     textEl.textContent = text;
     bubble.classList.add('is-visible');
-    if (holdMs) hideTimer = setTimeout(hush, holdMs);
+    if (holdMs) hideTimer = setTimeout(() => { hush(); settle(); }, holdMs);
   }
   function hush() { bubble.classList.remove('is-visible'); }
+
+  // Once a timed bubble expires, the capsule shouldn't keep wearing the
+  // expression that went with it — a permanently worried or grinning
+  // face reads as stuck. Only the two states that time out are reset,
+  // and only if nothing else has moved the avatar on in the meantime.
+  function settle() {
+    if (root.dataset.state === 'answering' || root.dataset.state === 'notfound') {
+      root.dataset.state = 'idle';
+    }
+  }
 
   function setState(state, text, holdMs) {
     clearTimeout(slowTimer);
@@ -65,6 +75,27 @@ function createMedLensAvatar(root) {  const bubble = root.querySelector('.ml-bub
     }, 6000 + Math.random() * 6000);
   }
   scheduleBeat();
+
+  // Tickle: clicking the capsule makes it grin, squint and bounce.
+  // Purely decorative — it doesn't touch data-state or the bubble, so it
+  // can't interrupt a message the avatar is in the middle of showing.
+  // The listener sits on the <svg> rather than the container so clicks
+  // on the speech bubble don't set it off.
+  const art = root.querySelector('svg');
+  if (art) {
+    art.addEventListener('click', () => {
+      // Remove, reflow, re-add so rapid clicks restart the animation
+      // instead of being swallowed while it's already running.
+      root.classList.remove('ml-tickle');
+      // The idle beat's selector outranks the tickle's, so clear it or a
+      // click landing mid-stretch would be ignored.
+      root.classList.remove('ml-beat');
+      void root.offsetWidth;
+      root.classList.add('ml-tickle');
+      clearTimeout(tickleTimer);
+      tickleTimer = setTimeout(() => root.classList.remove('ml-tickle'), 900);
+    });
+  }
 
   return { setState, say, hush, get state() { return root.dataset.state; } };
 }

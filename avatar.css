@@ -47,6 +47,13 @@ body[data-theme="dark"] .ml-avatar {
 
 .ml-avatar svg { width: var(--ml-size); height: auto; overflow: visible; display: block; }
 
+/* The container is pointer-events:none so the avatar never blocks the
+   page. The capsule art opts back in so it can be clicked — scoped to
+   the drawn group rather than the whole <svg> box, so SVG hit-testing
+   only reacts to painted pixels and clicks through the transparent
+   corners still reach whatever is underneath. */
+.ml-react { pointer-events: auto; cursor: pointer; }
+
 /* Speech bubble */
 .ml-bubble {
   pointer-events: auto;
@@ -159,6 +166,29 @@ body[data-theme="dark"] .ml-avatar {
 /* Idle "personality beat": a periodic wiggle the JS triggers by adding .ml-beat */
 .ml-avatar.ml-beat[data-state="idle"] .ml-react { animation: ml-stretch 1.2s ease-in-out; }
 @keyframes ml-stretch { 0%,100% { transform: none; } 30% { transform: translateY(-6px) scale(1.05,.95) rotate(3deg); } 60% { transform: translateY(1px) scale(.96,1.05) rotate(-4deg); } }
+
+/* Tickle: clicking the capsule makes it grin, squint and bounce.
+   Declared after every data-state rule on purpose — these selectors tie
+   on specificity with the per-state ones, so source order is what lets
+   the tickle win for the ~0.9s the class is applied. Under
+   prefers-reduced-motion the bounce is suppressed by the block below
+   and only the grin remains, which is the intended fallback. */
+.ml-avatar.ml-tickle .ml-mouth--smile,
+.ml-avatar.ml-tickle .ml-mouth--flat,
+.ml-avatar.ml-tickle .ml-mouth--o { display: none; }
+.ml-avatar.ml-tickle .ml-mouth--grin { display: inline; }
+.ml-avatar.ml-tickle .ml-react { animation: ml-tickle .9s cubic-bezier(.34,1.56,.64,1); }
+.ml-avatar.ml-tickle .ml-eye-lids { animation: ml-squint .9s ease-in-out; }
+@keyframes ml-tickle {
+  0%   { transform: none; }
+  14%  { transform: translateY(-11px) rotate(7deg)  scale(1.05,.95); }
+  30%  { transform: translateY(3px)   rotate(-8deg) scale(.95,1.06); }
+  46%  { transform: translateY(-8px)  rotate(6deg)  scale(1.04,.96); }
+  62%  { transform: translateY(2px)   rotate(-5deg) scale(.97,1.03); }
+  80%  { transform: translateY(-4px)  rotate(3deg); }
+  100% { transform: none; }
+}
+@keyframes ml-squint { 0%, 100% { transform: scaleY(1); } 18%, 72% { transform: scaleY(.45); } }
 
 /* [MEDLENS] Keep the avatar clear of page content.
    The capsule renders ~154px tall at the default size, plus the bubble
