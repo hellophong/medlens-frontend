@@ -574,11 +574,12 @@ if(mlAvatar) mlAvatar.setState('answering', answerLine((DB[key] && DB[key].brand
 card.innerHTML = `<div class="panel" style="text-align:center; padding:50px;"><div style="font-size:32px;margin-bottom:10px;">🔎</div><b>No match found for "${rawQuery}"</b><p style="color:var(--muted); font-size:13px; margin-top:8px;">Try checking spelling, or search by generic name instead of brand name.</p></div>`;
 card.classList.add('show');
 if(mlAvatar){
-mlAvatar.setState('notfound', lastLookupFailure === 'network'
+const notFoundText = lastLookupFailure === 'network'
 ? "That search didn't go through. Give it another try in a moment."
 // The backend's 404 body carries no spelling suggestion, so there is
 // nothing to pass here. Add one if it ever starts returning them.
-: notFoundLine(query, null));
+: notFoundLine(query, null);
+mlAvatar.setState('notfound', notFoundText, ML_NOTFOUND_HOLD_MS);
 }
 }
 }

@@ -15,6 +15,10 @@
 // stuck once someone settles in to read the result card.
 const ML_ANSWER_HOLD_MS = 10 * 60 * 1000; // 10 minutes
 
+// The not-found bubble clears much faster — it's a short correction
+// ("check the spelling"), not something to keep referring back to.
+const ML_NOTFOUND_HOLD_MS = 10 * 1000; // 10 seconds
+
 function createMedLensAvatar(root) {  const bubble = root.querySelector('.ml-bubble');
   const textEl = root.querySelector('.ml-bubble-text');
   const pupils = root.querySelectorAll('.ml-pupil');

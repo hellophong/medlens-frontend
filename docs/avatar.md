@@ -33,6 +33,24 @@ what's happening after about six seconds of waiting.
 State is driven by a `data-state` attribute on `#mlAvatar`; all the animation
 selectors key off it.
 
+### How long the bubble stays up
+
+Two states clear their own bubble on a timer, set by constants at the top of
+`avatar.js`. Any new search cancels a pending hide and shows the new line.
+
+| Constant | Value | Applies to |
+|---|---|---|
+| `ML_ANSWER_HOLD_MS` | 10 minutes | `answering` — stays long enough to keep referring back to while reading the card |
+| `ML_NOTFOUND_HOLD_MS` | 10 seconds | `notfound` — a short correction, including the network-failure line |
+
+`welcome` has no hold of its own; it clears when the 5.5s timer switches to
+`idle`. `idle`, `attentive` and `thinking` show no bubble, except for the
+cold-start line `thinking` adds after six seconds.
+
+Hiding the bubble does not change `data-state` — the capsule keeps its
+expression until the next interaction, and typing in the search box returns it
+to `attentive` or `idle`.
+
 ## Where the code lives
 
 | File | Contains |
