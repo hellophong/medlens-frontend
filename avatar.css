@@ -1,0 +1,183 @@
+/* =====================================================================
+   MedLens capsule avatar
+   Source: the "COPY TO MEDLENS (1 of 3)" block of the reference demo.
+   Everything is prefixed with ml- so it can't clash with site styles.
+
+   MedLens-specific changes from the reference, all marked [MEDLENS]:
+     1. Dark mode keys off body[data-theme="dark"] instead of
+        prefers-color-scheme, because MedLens themes via an explicit
+        attribute set by its toggle — the OS media query would ignore it.
+     2. Added layout padding + a small-screen size step so the avatar
+        doesn't sit on top of the results on a phone.
+   ===================================================================== */
+
+.ml-avatar {
+  /* ---- Customize here ---- */
+  --ml-capsule-top: #2E9E6B;
+  --ml-capsule-bottom: #CDEFD9;
+  --ml-capsule-seam: #1F7A50;
+  --ml-face: #10372A;
+  --ml-cheek: #F4A6A0;
+  --ml-frames: #10372A;
+  --ml-lens: rgba(255,255,255,.22);
+  --ml-shine: rgba(255,255,255,.55);
+  --ml-shadow: rgba(16,55,42,.16);
+  --ml-spark: #FFD66B;
+  --ml-bubble-bg: #FFFFFF;
+  --ml-bubble-text: #1C3A2E;
+  --ml-size: 132px;
+
+  position: fixed;
+  right: calc(16px + env(safe-area-inset-right, 0px));
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 50;
+  display: flex; flex-direction: column; align-items: flex-end;
+  pointer-events: none;
+  font-family: inherit;
+}
+
+/* [MEDLENS] Follow the site's own theme attribute, not the OS setting.
+   MedLens always sets data-theme on <body>, so this is the only dark
+   trigger that will ever actually fire here. */
+body[data-theme="dark"] .ml-avatar {
+  --ml-bubble-bg: #1F3A2D;
+  --ml-bubble-text: #E4F4EB;
+  --ml-shadow: rgba(0,0,0,.45);
+}
+
+.ml-avatar svg { width: var(--ml-size); height: auto; overflow: visible; display: block; }
+
+/* Speech bubble */
+.ml-bubble {
+  pointer-events: auto;
+  max-width: min(270px, 72vw);
+  margin: 0 calc(var(--ml-size) * .3) 2px 0;
+  padding: .7rem .9rem;
+  background: var(--ml-bubble-bg); color: var(--ml-bubble-text);
+  border: 2px solid var(--ml-capsule-seam);
+  border-radius: 18px 18px 4px 18px;
+  font-size: .92rem; line-height: 1.4;
+  box-shadow: 0 8px 22px var(--ml-shadow);
+  opacity: 0; visibility: hidden;
+  transform: translateY(8px) scale(.9);
+  transform-origin: bottom right;
+  transition: opacity .22s ease, transform .3s cubic-bezier(.34,1.56,.64,1), visibility .22s;
+}
+.ml-bubble.is-visible { opacity: 1; visibility: visible; transform: none; }
+.ml-bubble p { margin: 0; }
+
+/* ---- Overall body: breathing squash + sway, always running ---- */
+.ml-body { transform-origin: 120px 200px; animation: ml-breathe 2.8s ease-in-out infinite; }
+@keyframes ml-breathe {
+  0%,100% { transform: translateY(0) rotate(-7deg) scale(1,1); }
+  30%     { transform: translateY(-9px) rotate(-5deg) scale(.97,1.03); }
+  55%     { transform: translateY(-3px) rotate(-9deg) scale(1.02,.98); }
+  80%     { transform: translateY(-6px) rotate(-6deg) scale(.99,1.01); }
+}
+.ml-sway { transform-origin: 120px 260px; animation: ml-sway 5.2s ease-in-out infinite; }
+@keyframes ml-sway { 0%,100% { transform: rotate(3deg); } 50% { transform: rotate(-3deg); } }
+
+/* State-specific body motion layers on top of breathing via the inner group */
+.ml-react { transform-origin: 120px 200px; transition: transform .2s ease; }
+.ml-avatar[data-state="attentive"] .ml-react { animation: ml-lean .5s cubic-bezier(.34,1.56,.64,1) forwards; }
+.ml-avatar[data-state="thinking"]  .ml-react { animation: ml-ponder 1.4s ease-in-out infinite; }
+.ml-avatar[data-state="answering"] .ml-react { animation: ml-hop .7s cubic-bezier(.34,1.7,.5,1); }
+.ml-avatar[data-state="notfound"]  .ml-react { animation: ml-shake .5s ease-in-out; }
+.ml-avatar[data-state="welcome"]   .ml-react { animation: ml-pop .6s cubic-bezier(.34,1.8,.5,1); }
+@keyframes ml-lean   { from { transform: none; } to { transform: translate(-7px,2px) rotate(-10deg); } }
+@keyframes ml-ponder { 0%,100% { transform: rotate(0); } 50% { transform: translate(-3px,-3px) rotate(-6deg); } }
+@keyframes ml-hop    { 0% { transform: translateY(0) scale(1,1); } 30% { transform: translateY(-26px) scale(.92,1.12); } 55% { transform: translateY(2px) scale(1.1,.9); } 75% { transform: translateY(-6px) scale(.98,1.03); } 100% { transform: translateY(0) scale(1,1); } }
+@keyframes ml-shake  { 0%,100% { transform: rotate(0); } 20% { transform: rotate(9deg); } 40% { transform: rotate(-8deg); } 60% { transform: rotate(6deg); } 80% { transform: rotate(-4deg); } }
+@keyframes ml-pop    { 0% { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+
+.ml-ground { transform-origin: 120px 262px; animation: ml-ground 2.8s ease-in-out infinite; }
+@keyframes ml-ground { 0%,100% { transform: scaleX(1); opacity: .9; } 30% { transform: scaleX(.8); opacity: .55; } }
+
+/* Eyes: blink always; pupils follow cursor via JS vars; gaze shifts by state */
+.ml-eye-lids { animation: ml-blink 4.4s infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes ml-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.08); } }
+.ml-pupil { transition: transform .18s ease-out; transform: translate(var(--ml-px,0px), var(--ml-py,0px)); }
+.ml-gaze { transition: transform .3s ease; }
+.ml-avatar[data-state="thinking"] .ml-gaze { transform: translate(5px,-7px); }
+.ml-avatar[data-state="notfound"] .ml-gaze { transform: translate(0,3px); }
+
+/* Brows */
+.ml-brow { transform-box: fill-box; transform-origin: center; transition: transform .3s ease; }
+.ml-avatar[data-state="idle"] .ml-brow,
+.ml-avatar[data-state="welcome"] .ml-brow { animation: ml-brow-lift 4.4s ease-in-out infinite; }
+@keyframes ml-brow-lift { 0%, 68%, 100% { transform: translateY(0); } 74%, 84% { transform: translateY(-3px); } }
+.ml-avatar[data-state="attentive"] .ml-brow { transform: translateY(-5px); }
+.ml-avatar[data-state="answering"] .ml-brow { transform: translateY(-4px); }
+.ml-avatar[data-state="thinking"] .ml-brow--l { transform: translateY(2px); }
+.ml-avatar[data-state="thinking"] .ml-brow--r { transform: translateY(-6px) rotate(-8deg); }
+.ml-avatar[data-state="notfound"] .ml-brow--l { transform: translateY(-7px) rotate(-10deg); }
+.ml-avatar[data-state="notfound"] .ml-brow--r { transform: translateY(3px) rotate(8deg); }
+
+/* Arms: wave patterns */
+.ml-arm-l { transform-box: fill-box; transform-origin: 90% 10%; }
+.ml-avatar[data-state="idle"] .ml-arm-l    { animation: ml-wave 4.4s ease-in-out infinite; }
+.ml-avatar[data-state="welcome"] .ml-arm-l { animation: ml-wave-fast .9s ease-in-out 4; }
+.ml-avatar[data-state="answering"] .ml-arm-r { animation: ml-cheer .7s ease-out; transform-box: fill-box; transform-origin: 10% 10%; }
+@keyframes ml-wave { 0%, 68%, 100% { transform: rotate(0); } 74% { transform: rotate(-24deg); } 80% { transform: rotate(6deg); } 86% { transform: rotate(-18deg); } }
+@keyframes ml-wave-fast { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-28deg); } 50% { transform: rotate(8deg); } 75% { transform: rotate(-22deg); } }
+@keyframes ml-cheer { 0% { transform: rotate(0); } 40% { transform: rotate(-34deg); } 100% { transform: rotate(0); } }
+
+/* Monocle: idle nudge + occasional glint */
+.ml-avatar[data-state="idle"] .ml-monocle { animation: ml-nudge 4.4s ease-in-out infinite; }
+@keyframes ml-nudge { 0%, 86%, 100% { transform: translateY(0); } 90% { transform: translateY(2px); } 94% { transform: translateY(-1.5px); } }
+.ml-glint { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.ml-avatar[data-state="idle"] .ml-glint,
+.ml-avatar[data-state="answering"] .ml-glint { animation: ml-glint 3.6s ease-in-out infinite; }
+@keyframes ml-glint { 0%, 70%, 100% { opacity: 0; transform: translateX(-6px); } 80% { opacity: .9; } 90% { opacity: 0; transform: translateX(6px); } }
+
+/* Mouths: one visible at a time */
+.ml-mouth--grin, .ml-mouth--o, .ml-mouth--flat { display: none; }
+.ml-avatar[data-state="welcome"] .ml-mouth--smile,
+.ml-avatar[data-state="answering"] .ml-mouth--smile,
+.ml-avatar[data-state="thinking"] .ml-mouth--smile,
+.ml-avatar[data-state="notfound"] .ml-mouth--smile { display: none; }
+.ml-avatar[data-state="welcome"] .ml-mouth--grin,
+.ml-avatar[data-state="answering"] .ml-mouth--grin { display: inline; }
+.ml-avatar[data-state="thinking"] .ml-mouth--flat { display: inline; }
+.ml-avatar[data-state="notfound"] .ml-mouth--o { display: inline; }
+
+/* Thinking dots */
+.ml-think { opacity: 0; transition: opacity .2s; }
+.ml-avatar[data-state="thinking"] .ml-think { opacity: 1; }
+.ml-think circle { animation: ml-dot 1.1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.ml-think circle:nth-child(2) { animation-delay: .18s; }
+.ml-think circle:nth-child(3) { animation-delay: .36s; }
+@keyframes ml-dot { 0%, 100% { opacity: .3; transform: translateY(2px) scale(.8); } 50% { opacity: 1; transform: translateY(-2px) scale(1.1); } }
+
+/* Success sparkles on answering */
+.ml-spark { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.ml-avatar[data-state="answering"] .ml-spark { animation: ml-sparkle .8s ease-out; }
+.ml-avatar[data-state="answering"] .ml-spark:nth-of-type(2) { animation-delay: .12s; }
+.ml-avatar[data-state="answering"] .ml-spark:nth-of-type(3) { animation-delay: .22s; }
+@keyframes ml-sparkle { 0% { opacity: 0; transform: scale(.2); } 50% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0; transform: scale(.6) translateY(-8px); } }
+
+/* Idle "personality beat": a periodic wiggle the JS triggers by adding .ml-beat */
+.ml-avatar.ml-beat[data-state="idle"] .ml-react { animation: ml-stretch 1.2s ease-in-out; }
+@keyframes ml-stretch { 0%,100% { transform: none; } 30% { transform: translateY(-6px) scale(1.05,.95) rotate(3deg); } 60% { transform: translateY(1px) scale(.96,1.05) rotate(-4deg); } }
+
+/* [MEDLENS] Keep the avatar clear of page content.
+   The capsule renders ~154px tall at the default size, plus the bubble
+   above it, so the stock 80px of bottom padding on <main> is not enough
+   to stop it covering the end of a result card. */
+main { padding-bottom: 210px; }
+
+/* [MEDLENS] Phones: shrink the capsule and tighten the bubble so the
+   pair doesn't dominate a ~380px viewport or sit over the results. */
+@media (max-width: 520px) {
+  .ml-avatar { --ml-size: 92px; right: calc(10px + env(safe-area-inset-right, 0px)); }
+  .ml-bubble { max-width: min(220px, 66vw); font-size: .85rem; padding: .6rem .75rem; }
+  main { padding-bottom: 170px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ml-avatar *, .ml-avatar .ml-body, .ml-avatar .ml-react { animation: none !important; transition: none !important; }
+  .ml-body { transform: rotate(-7deg); }
+  .ml-pupil { transform: none; }
+  .ml-think circle, .ml-spark { opacity: 1; }
+  .ml-spark { opacity: 0; }
+}

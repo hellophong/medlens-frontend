@@ -177,6 +177,7 @@ a.other-drug-chip:hover{ background:var(--accent); color:#fff; border-color:var(
 .source-dot{ width:6px;height:6px;border-radius:50%; background:#00C2A8; }
 footer{ text-align:center; padding:26px; font-size:11px; color:var(--muted); border-top:1px solid var(--border); }
 </style>
+<link rel="stylesheet" href="avatar.css">
 </head>
 <body data-theme="light">
 <header class="topbar">
@@ -229,7 +230,97 @@ Searching drug databases...
 </div>
 </main>
 <footer>MEDLENS — Internal demo build. Content is illustrative. 080826</footer>
+
+<!-- Capsule avatar. Sits here rather than literally after the main
+     <script> because that script runs at parse time and wires the
+     avatar up directly — matching how every other element in this file
+     is bound. Placed after it, getElementById('mlAvatar') would be null. -->
+<div class="ml-avatar" id="mlAvatar" data-state="idle">
+  <div class="ml-bubble" role="status" aria-live="polite"><p class="ml-bubble-text"></p></div>
+  <svg viewBox="0 0 240 280" role="img" aria-label="MedLens helper: a green capsule wearing a monocle">
+    <ellipse class="ml-ground" cx="120" cy="262" rx="56" ry="9" fill="var(--ml-shadow)"/>
+
+    <g class="ml-think" aria-hidden="true">
+      <circle cx="194" cy="50" r="5" fill="var(--ml-capsule-seam)"/>
+      <circle cx="210" cy="33" r="6.5" fill="var(--ml-capsule-seam)"/>
+      <circle cx="228" cy="14" r="8" fill="var(--ml-capsule-seam)"/>
+    </g>
+
+    <g class="ml-spark" aria-hidden="true"><path d="M44 60 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 Z" fill="var(--ml-spark)"/></g>
+    <g class="ml-spark" aria-hidden="true"><path d="M200 70 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z" fill="var(--ml-spark)"/></g>
+    <g class="ml-spark" aria-hidden="true"><path d="M58 30 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2 Z" fill="var(--ml-spark)"/></g>
+
+    <g class="ml-sway">
+    <g class="ml-body">
+    <g class="ml-react">
+      <path class="ml-arm-l" d="M62 150 q-26 -6 -30 -30" fill="none" stroke="var(--ml-capsule-seam)" stroke-width="9" stroke-linecap="round"/>
+      <path class="ml-arm-r" d="M178 160 q22 8 24 30" fill="none" stroke="var(--ml-capsule-seam)" stroke-width="9" stroke-linecap="round"/>
+
+      <path d="M60 140 V90 a60 60 0 0 1 120 0 V140 Z" fill="var(--ml-capsule-top)"/>
+      <path d="M60 140 V190 a60 60 0 0 0 120 0 V140 Z" fill="var(--ml-capsule-bottom)"/>
+      <rect x="58" y="134" width="124" height="12" rx="6" fill="var(--ml-capsule-seam)"/>
+      <path d="M76 70 q8 -22 30 -28" fill="none" stroke="var(--ml-shine)" stroke-width="9" stroke-linecap="round"/>
+      <circle cx="72" cy="92" r="5" fill="var(--ml-shine)"/>
+
+      <path class="ml-brow ml-brow--l" d="M86 76 q12 -7 24 -1" fill="none" stroke="var(--ml-face)" stroke-width="4" stroke-linecap="round"/>
+      <path class="ml-brow ml-brow--r" d="M130 75 q12 -6 24 1" fill="none" stroke="var(--ml-face)" stroke-width="4" stroke-linecap="round"/>
+
+      <g class="ml-gaze">
+        <g class="ml-eye-lids">
+          <ellipse cx="98" cy="102" rx="9" ry="11" fill="#fff" stroke="var(--ml-face)" stroke-width="1.5"/>
+          <circle class="ml-pupil" cx="98" cy="102" r="5.5" fill="var(--ml-face)"/>
+          <circle cx="100" cy="99" r="2" fill="#fff"/>
+        </g>
+        <g class="ml-eye-lids">
+          <ellipse cx="142" cy="102" rx="9" ry="11" fill="#fff" stroke="var(--ml-face)" stroke-width="1.5"/>
+          <circle class="ml-pupil" cx="142" cy="102" r="5.5" fill="var(--ml-face)"/>
+          <circle cx="144" cy="99" r="2" fill="#fff"/>
+        </g>
+      </g>
+
+      <g class="ml-monocle">
+        <path d="M158 112 q16 22 6 50 q-4 12 4 22" fill="none" stroke="var(--ml-frames)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="1 5"/>
+        <circle cx="142" cy="102" r="19" fill="var(--ml-lens)" stroke="var(--ml-frames)" stroke-width="4.5"/>
+        <path class="ml-glint" d="M131 91 l7 -5" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      </g>
+
+      <ellipse cx="84" cy="120" rx="8" ry="5" fill="var(--ml-cheek)" opacity=".85"/>
+      <ellipse cx="156" cy="120" rx="8" ry="5" fill="var(--ml-cheek)" opacity=".85"/>
+
+      <path class="ml-mouth--smile" d="M108 118 q12 12 24 0" fill="none" stroke="var(--ml-face)" stroke-width="4.5" stroke-linecap="round"/>
+      <path class="ml-mouth--grin" d="M105 116 q15 18 30 0 z" fill="var(--ml-face)" stroke="var(--ml-face)" stroke-width="3" stroke-linejoin="round"/>
+      <path class="ml-mouth--flat" d="M111 121 q4.5 -4 9 0 q4.5 4 9 0" fill="none" stroke="var(--ml-face)" stroke-width="4" stroke-linecap="round"/>
+      <ellipse class="ml-mouth--o" cx="120" cy="122" rx="5" ry="6" fill="var(--ml-face)"/>
+    </g>
+    </g>
+    </g>
+  </svg>
+</div>
+
+<script src="avatar.js"></script>
 <script>
+// Avatar handle. Declared up here so doSearch can reference it safely;
+// it's created once the page has finished wiring everything else up.
+let mlAvatar = null;
+// lookupDrug returns null for both "no such drug" and "request failed".
+// The avatar needs to tell those apart to say the right thing, so the
+// reason is recorded here rather than changing lookupDrug's return type,
+// which doSearch and the chip buttons already depend on.
+let lastLookupFailure = null;
+
+// Decides what actually gets sent to the API. extractDrug() keeps only
+// the first word that isn't filler, which is right for a question but
+// wrong for a drug whose name is several words. Compare the word counts:
+// if nothing was filtered, the query was never a sentence, so send it as
+// typed.
+function mlSearchTerm(rawQuery){
+const raw = String(rawQuery || '').trim();
+const words = raw.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').split(/\s+/).filter(Boolean);
+const kept = words.filter(w => !ML_FILLER.has(w));
+const strippedFiller = kept.length < words.length;
+if(!strippedFiller) return raw;            // "insulin glargine" -> unchanged
+return extractDrug(raw) || raw;            // "side effects of metformin" -> "metformin"
+}
 const DB = {
 amvuttra:{brand:"AMVUTTRA", generic:"vutrisiran", company:"Alnylam Pharmaceuticals", companyInitials:"AL", companyFounded:"2002", companyHQ:"Cambridge, MA", companyFocus:"RNAi Therapeutics", drugClass:"RNA Interference (RNAi) Therapeutic", route:"Subcutaneous injection", frequency:"Every 3 months", accent:"#E7004C", indication:"Amvuttra is used to treat polyneuropathy caused by hereditary transthyretin-mediated (hATTR) amyloidosis in adults.", laymanSummary:"Amvuttra helps people whose bodies make a faulty protein that builds up and damages nerves over time.", drugWebsite:"https://www.amvuttra.com", companyWebsite:"https://www.alnylam.com", otherDrugs:["Onpattro","Givlaari","Oxlumo","Leqvio"], bodyZones:["peripheral-nerves","heart"], bodyZoneLabels:{"peripheral-nerves":"Peripheral Nervous System — primary site of amyloid deposit damage","heart":"Cardiac tissue — amyloidosis can also affect the heart"}, sideEffects:[{name:"Injection site reactions",serious:false},{name:"Fatigue",serious:false},{name:"Peripheral edema",serious:false},{name:"Vitamin A deficiency",serious:true}], resources:[{icon:"🤝", title:"Alnylam Assist", text:"Patient support program offering financial assistance."},{icon:"📞", title:"1:1 Nurse Educator Access", text:"Dedicated nurse educators for onboarding support."},{icon:"💰", title:"Copay Savings Card", text:"Eligible patients may pay as little as $0 per dose."}]},
 wegovy:{brand:"WEGOVY", generic:"semaglutide", company:"Novo Nordisk", companyInitials:"NN", companyFounded:"1923", companyHQ:"Bagsværd, Denmark", companyFocus:"Diabetes & Obesity Care", drugClass:"GLP-1 Receptor Agonist", route:"Subcutaneous injection / oral tablet", frequency:"Weekly (injection) or daily (tablet)", accent:"#0092BC", indication:"Wegovy is indicated for chronic weight management in adults and adolescents with obesity.", laymanSummary:"Wegovy is a weekly shot that helps people feel full faster and eat less, supporting weight loss over time.", drugWebsite:"https://www.wegovy.com", companyWebsite:"https://www.novonordisk.com", otherDrugs:["Ozempic","Rybelsus","Saxenda","Victoza"], bodyZones:["brain","stomach","heart"], bodyZoneLabels:{"brain":"Hypothalamus — appetite signaling","stomach":"GI tract — slows gastric emptying","heart":"Cardiovascular system — reduces cardiac events"}, sideEffects:[{name:"Nausea",serious:false},{name:"Diarrhea",serious:false},{name:"Constipation",serious:false},{name:"Pancreatitis",serious:true},{name:"Gallbladder issues",serious:true}], resources:[{icon:"🌱", title:"Live Lighter™ Program", text:"Behavioral support and meal planning tools."},{icon:"💳", title:"NovoCare Savings Offer", text:"Savings card for eligible patients."},{icon:"📱", title:"Injection Pen Tutorial App", text:"Step-by-step self-injection guide."}]},
@@ -406,13 +497,14 @@ return `${trialBanner}<div class="drug-header"><div class="drug-title-block"><h2
 }
 
 async function lookupDrug(query) {
+lastLookupFailure = null;
 try {
 // The backend now runs the similar-drugs lookup in parallel with the
 // LLM summary and returns it inline as data.similarDrugs, so this is
 // a single round trip instead of two sequential fetches.
 const t0 = performance.now();
 const res = await fetch(`https://medlens-backend-tqmk.onrender.com/api/drug/${encodeURIComponent(query)}`);
-if (!res.ok) return null;
+if (!res.ok) { lastLookupFailure = 'notfound'; return null; }
 const data = await res.json();
 // Where the wait actually went. Open the browser console (F12) after a
 // search to see the split: a large gap between roundTrip and server
@@ -432,11 +524,19 @@ DB[key] = data;
 return key;
 } catch (err) {
 console.error("Lookup failed:", err);
+lastLookupFailure = 'network';
 return null;
 }
 }
 
-async function doSearch(query){
+async function doSearch(rawQuery){
+// Reduce natural-language queries ("side effects of metformin") to the
+// drug name before hitting the API — but only when filler words were
+// actually stripped. extractDrug returns just the FIRST surviving word,
+// so running it unconditionally would truncate legitimate multi-word
+// drug names ("insulin glargine" -> "insulin"). If nothing was filtered,
+// the text is already a bare drug name and goes through untouched.
+const query = mlSearchTerm(rawQuery);
 const loading = document.getElementById('loading');
 const empty = document.getElementById('emptyState');
 const card = document.getElementById('resultCard');
@@ -444,6 +544,7 @@ const disclaimer = document.getElementById('globalDisclaimer');
 empty.style.display = 'none';
 card.classList.remove('show');
 loading.classList.add('show');
+if(mlAvatar) mlAvatar.setState('thinking');
 const key = await lookupDrug(query);
 loading.classList.remove('show');
 const isTrialResult = !!(key && DB[key] && DB[key].source === 'trial');
@@ -458,9 +559,17 @@ attachDrugLinkListeners();
 // Fired after the card is already on screen — news never blocks the
 // main result, so a slow feed can't make search feel slower.
 loadCoverage(query);
+if(mlAvatar) mlAvatar.setState('answering', answerLine((DB[key] && DB[key].brand) || query, rawQuery));
 } else {
-card.innerHTML = `<div class="panel" style="text-align:center; padding:50px;"><div style="font-size:32px;margin-bottom:10px;">🔎</div><b>No match found for "${query}"</b><p style="color:var(--muted); font-size:13px; margin-top:8px;">Try checking spelling, or search by generic name instead of brand name.</p></div>`;
+card.innerHTML = `<div class="panel" style="text-align:center; padding:50px;"><div style="font-size:32px;margin-bottom:10px;">🔎</div><b>No match found for "${rawQuery}"</b><p style="color:var(--muted); font-size:13px; margin-top:8px;">Try checking spelling, or search by generic name instead of brand name.</p></div>`;
 card.classList.add('show');
+if(mlAvatar){
+mlAvatar.setState('notfound', lastLookupFailure === 'network'
+? "That search didn't go through. Give it another try in a moment."
+// The backend's 404 body carries no spelling suggestion, so there is
+// nothing to pass here. Add one if it ever starts returning them.
+: notFoundLine(query, null));
+}
 }
 }
 
@@ -501,6 +610,12 @@ const isDark = e.target.checked;
 document.body.setAttribute('data-theme', isDark ? 'dark':'light');
 document.getElementById('themeLabel').textContent = isDark ? 'Dark':'Light';
 });
+
+// ---- Capsule avatar ----
+mlAvatar = createMedLensAvatar(document.getElementById('mlAvatar'));
+attachAvatarToSearch(mlAvatar, document.getElementById('searchInput'));
+mlAvatar.setState('welcome', "Hi! Type a drug name in the search bar and I'll go find it.");
+setTimeout(() => { if (mlAvatar.state === 'welcome') mlAvatar.setState('idle'); }, 5500);
 </script>
 </body>
 </html>
