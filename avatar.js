@@ -8,12 +8,17 @@
 
    Loaded before the main inline script, so these are available on the
    global scope when index.html wires them to the real search flow.
+
+   Diverges from the reference in one place: answerLine's default copy.
+   The original "Before you change anything…" assumes the reader is
+   already taking the drug and might alter their regimen, which is wrong
+   for anyone just looking something up.
    ===================================================================== */
 
 // How long the answering bubble stays up before fading out on its own.
 // Without a hold it sits there until the next search, which reads as
 // stuck once someone settles in to read the result card.
-const ML_ANSWER_HOLD_MS = 10 * 60 * 1000; // 10 minutes
+const ML_ANSWER_HOLD_MS = 10 * 1000; // 10 seconds
 
 // The not-found bubble clears much faster — it's a short correction
 // ("check the spelling"), not something to keep referring back to.
@@ -125,7 +130,7 @@ function answerLine(drugName, rawQuery) {
   if (ML_CAUTION.test(rawQuery)) {
     return `Here's what I found on ${drugName}. Questions about mixing, dosing, or who can take it are best answered by a pharmacist or doctor, so please check with one first.`;
   }
-  return `Here's what I found on ${drugName}. Before you change anything, check with your doctor or pharmacist.`;
+  return `Here's what I found on ${drugName}. For anything involving your own treatment, check with your doctor or pharmacist.`;
 }
 function notFoundLine(query, suggestion) {
   return suggestion

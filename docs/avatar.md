@@ -40,8 +40,8 @@ Two states clear their own bubble on a timer, set by constants at the top of
 
 | Constant | Value | Applies to |
 |---|---|---|
-| `ML_ANSWER_HOLD_MS` | 10 minutes | `answering` — stays long enough to keep referring back to while reading the card |
-| `ML_NOTFOUND_HOLD_MS` | 10 seconds | `notfound` — a short correction, including the network-failure line |
+| `ML_ANSWER_HOLD_MS` | 10 seconds | `answering` |
+| `ML_NOTFOUND_HOLD_MS` | 10 seconds | `notfound`, including the network-failure line |
 
 `welcome` has no hold of its own; it clears when the 5.5s timer switches to
 `idle`. `idle`, `attentive` and `thinking` show no bubble, except for the
